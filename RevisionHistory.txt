@@ -1,0 +1,225 @@
+* Update: 3/19/2016, Reved to version 1.0.0. Added health, added
+* explosions affect on health and other objects.
+* Update: 3/21/2016, Reved to version 1.0.1, Added health packs, added
+* a few textures to varous objects, added random block drop to occure,
+* added fall damage. Added additional structures to the level,
+* fixed an issue where the full health item was not being displayed
+* correctly.
+* Update: 3/22/2016, Reved to version 1.0.2, Added the AI attack drone
+* and its basic firing capabilities.
+* Update: 3/23/2016, Reved to version 1.0.3, Added lives to the game, now you can
+* lose lives without a total restart, added the high score value, preformed
+* a minor refactor of the preferance code, added a default flag to keep track of
+* when user settings are set to defaults or not. Added basic cross hair to the
+* game. All crates now contain ammo, removed player bounce to prevent motion sickness
+* added the gatling gun to the game. Ammo pickups now fall with gravity making them easier
+* to pickup. Health packs also fall with gravity.
+* Update: 3/24/2016, Reved to version 1.0.4, Made pickup items easier to grab,
+* fixed an issue where losing a life does not reset health, fixed another issue where
+* loosing all lives does not reset the player position, Attack drones now appear faster
+* and the rate they appear increase, the number of drones in play can be seen on the
+* screen. Removed the ball pickup item. Preformed a refactor on the code, removed
+* all unused scripts, created a new script for destroying objects that will take the place
+* of the previous ones. 
+* Update: 3/25/2016, Reved to version 1.0.5, Fixed an issue where player Prefs were not being
+* saved properly. Setup basic UI for Android. This included two joysticks and several buttons.
+* Update: 3/29/2016, Reved to version 1.0.6, Added the full pause menu for the game. Fixed some general
+* UI problems with the Android interface.
+* Update: 3/30/2016, Reved to version 1.0.7, Added a fire button on the android UI to prevent screen
+* touches from causing problems. Also made the Android UI buttons transparent so the user can still see the battle.
+* Made Android joysticks transparent a little larger and in a better position on the screen. Added the
+* Sphere crusher icon to the game system file. Fixed an issue where high velocity rounds were exploding
+* when the game ends. Added logic to the pause menu to detect when the escape button is pressed on Windows
+* or when the pause button is pressed on mobile.
+* Update: 3/31/2016, Reved to version 1.0.8, Fixed an issue with the gatling gun in android. Added actual
+* guns to the game instead of just a simple cyclendar. Added the new laser gun to the game.
+* Update: 4/1/2016, Reved to version 1.0.9, Addedd rifle ammo packs, modified the health pack so it
+* is easier to pick up. Seperated out machine gun bullets from other weapon bullets. Modifed the machine
+* gun bullet to be smaller. Added ammo for each weapon type. Increased the range of the laser weapon.
+* Update: 4/2/2016, Reved to version 1.0.10, Fixed an issue where pickup items would not fall totally to the ground
+* and get stuck in unusual positions. Fixed an issue where the player position was getting saved every time 
+* they lost a life, the position should only save to the check points. Decreased fire rate of rifle, increasedwwwww
+* the damage that all weapons cause. Decreased the drones rate of fire. Added sparks where laser hits, increased
+* the speed of the grenade fire. Added laser charging effect. Added weapon status text.
+* Update: 4/4/2016, Reved to version 1.1.0 (Alpha), Added a script to handle each weapon type, the script is
+* attached to the weapon fire point. Now each weapon object holds it's own data. Fixed an issue where
+* the drone script was attempting to add a score to the player controller when the game ended. Replaced
+* load level with load scene to elminate a warning message. Added code to save the position of all drones
+* when the game is saved.
+* Update: 4/5/2016, Reved to version 1.1.1 (Alpha), Fixed an issue where ammo crates were uncollectable.
+* removed temporary text handlers from all weapons, this will now only be used on the player object. Added code
+* to store the number of drones in the game and the number of drones destroyed. Fixed an issue where destroyed 
+* drones were no longer being counted. Fixed an issue where life and health were not resetting at the end of 
+* a game. Added code to lock the cursor on the screen so it doesnt go off somewhere else and mess up the game.
+* Added slow laser recharge, ammo packs now have a greater value on pickup. Saving the drone spawn rate to
+* the player prefs file. Fixed a minor issue where the launch tube had no ammo pack associated with it.
+* Update: 4/6/2016, Reved to version 1.1.2 (Alpha), Added additional ammo crates and health packs, fleshed out
+* the level a little more and added wall prefabs that have texture. Added gun pickups for every weapon except the
+* rifle. Chagned the width of the Android pause, weapon and jump buttons, 
+* Update: 4/7/2016, Reved to version 1.1.3 (Alpha), Added and finished look around swipe controls for android.
+* added all limiting boundaries to prevent the camera from getting stuck. Reved to next settings version.
+* removed unused variables. Built out the level a little more; replacing several yellow walls with brick walls.
+* Update: 4/8/2016, Reved to version 1.1.4 (Alpha), Fixed an issue where the touch input for moving the player
+* with the joystick or pressing buttons was being interpreted as the look around input. Increased the speed of
+* the look around function. Preformed a minor refactor of the code. Added the version text to the screen.
+* Changed target sphere color to green (to not get confused with enymy objects). Added a tracer to the
+* rifle round as well as the machine gun round for better visability. Decreased the speed of both rounds for the
+* same reason. Fixed an issue where firing was allowed while the game is paused. Increased the relative power
+* of the laser cannon.
+* Update: 4/9/2016, Reved to version 1.1.5 (Alpha3), Fixed an issue where touches needed to be made in a certain 
+* order for full control, now the touch that is within the look area of the screen is interpreted as such, all other touches
+* are ignored. Replaced many of the old yellow walls with the new brick walls, replaced the entire catwalk structure with
+* a catwalk that has improved texture. Added more catwalks to the level. Fixed an issue where when the character dies and has no lives
+* their position was not being reset. Set min drone spawn rate to once every 5 seconds. Filled out the level a lot
+* Added the portal object which generates spheres.
+* Update: 4/11/2016, Reved to version 1.1.6 (Alpha 2), Made the portals destroyable, if a portal is destroyed, all the drones in 
+* the game are destroyed also. Fixed an issue where drone counts were not being updated properly, now we recount the drones each
+* time a drone is destroyed. Drones are now only generated by portholes. Filled out the level a little bit, adding more portholes
+* as well as more ramps and crates. Added code to save the position of each portal, drones now appear at random portals. Set a max
+* value for the number of drones allowed in the game.
+* Update: 4/12/2016, Reved to version 1.1.7 (Alpha 2), Built the menu system and finalized the spash screen. Both of these
+* tools will need to be heavily reviewed.
+* Update: 4/13/2016, Reved to version 1.1.8 (Alpha 2), Made some improvments to the Android UI to make it easier to aim the
+* weapon. Added code to support easily storing game objects in PlayerPrefs using their tag. Drone launcher is now used only
+* as a refrence point, the FirstPerson controller actually launches the drone. Preformed a refactor of the code; elmininating
+* as many warnings as possible. Added back high score tracking. Splash screen now exits when the fire button (mouse) is clicked on
+* Windows.
+* Update: 4/14/2016, Reved to version 1.1.9 (Alpha 2), Reduced the health of the drone so it can be more easily dispatched with
+* both the laser and rifle. Changed high score save so it does not save every time new scores are added. Modified the small
+* explosion so it does not hurt the players health. Decreased the size of the bullet explosion. Explosions now only last 2 seconds.
+* Decreased the size of each explosion to reduce lag. Decreased the health of the portals. Centered the temporary text. Increased the
+* amount of time before pickups become collectables. Fixed the weapon script to reduce IO writes (improving preformance). Added win 
+* condition for game.
+* Update: 4/15/2016, Reved to version 1.1.10 (Alpha 2), On victory the mouse gets unlocked. Decreased the time between victory checks,
+* reduced the amount of time that the game indicates a victory. On victory, settings go back to default values. Modified the portals so you need
+* to actually hit the base to destroy them. Added walls around each portal, making it only accesible if the user is on that level. Added the
+* turret object, this enymey is a stationary turret capable of inflicting damage on the player.
+* Update: 4/16/2016, Reved to version 1.1.11 (Alpha 3), Now scaling the buttons and menu to the screen size. Added controls
+* for look and pan sensitivity on Android. Preformed a minor refactor of the code. Added code to save the number of drones
+* created, killed and the drone spawn rate. Added code to save all current drones on the players death. Added the rocket launcher
+* object.
+* Update: 4/17/2016, Reved to version 1.1.12 (Alpha 3) Added code to ensure that the sensitivity settings are always correct. Added
+* the rocket launcher sound effect. Added the allied drone Unit, this object is a drone that is on your side and will go and attack
+* eneymy drones.
+* Update: 4/19/2016, Reved to version 1.1.13, (Alpha 3) Added code to prevent the laser from firing when the game is paused. Added code
+* that makes the allied drones fight back against the enemy drones and vice versa. Added rocket launcher as pickup item. Added the rocket
+* pickup item. Preformed a refactor/code reduction to make it easier to add new weapons in the future.
+* Update: 4/20/2016, Reved to version 1.1.14 (Alpha 3), Preformed a refactor on the code that handles weapon switches. Now this code is
+* significantly more flexible and efficient. New weapons can be added easily. Attempted to improve the laser by adding particles, this 
+* did not look as good as I thought it would. Preformed a refactor on the tag system, removed unused or uneeded tags and organized new ones
+* into logical groupings. Added code to make the look sensitivity adjustable. Fixed an issue where sensitivity settings kept getting
+* reset to defaults, also added code to only do an IO write with thoes settings when returns is clicked. Fixed another issue where both
+* the X and Y sensitivity bars always started at the same positions.
+* Update: 4/21/2016, Reved to version 1.1.15 (Alphas 3), Disable hasLaser by default. Fixed an issue where rocket ammo could not be 
+* collected. Disabled the battery auto-charge feature. Reduced the total amount of energy the laser collects per battery. No longer
+* spawning the smallest crates. Fixed an issue where the game was not loading attack drone models or allied models (this was because the function
+* that loads those modesl was only Instantiating the portal model. Fixed an issue where saving the game did not save the weapon
+* ammo ammounts. Removed the function that spawns new blocks for the crate type 3. This is an effort to improve preformance. 
+* fixed a minor issue where the score value was not being cleared when the game would restart or end. Added volume controls
+* to the game. Added the point defense laser beam.
+* Update: 4/22/2016, Reved to version 1.1.16 (Alpha 3) fixed some issues with the point defense laser beam. Added code to prevent too many
+* rapid saves when passing a level marker. Increased the probability of getting a health pack from a crate. Added code that adds the probability
+* that the user may get nothing from a crate exploding. Fixed an issue where laser batteries were not being picked up and added correctly.
+* Update: 4/25/2016, Reved to version 1.1.17 (Alpha 4) Added the heavy turret object, added the new projectile script, this will replace all
+* current projectile type scripts. Added a barrel to the existing turret object.
+* Update: 4/26/2016, Reved to version 1.1.18 (Alpha 4) Added the guided rocket object. Added all weapon packs associated with the guided rocket
+* added the guided rocket launcher as a new weapon type. Added a small section of the level to pickup guided rockets. Added the basic structure
+* for the battlecruiser end-guy. This is a tough unit that will take a lot of hits to destroy.
+* Update: 4/27/2016, Reved to version 1.1.19 (Alpha 4), Added more battlecruiser dynamics, Fixed an issue where point defense systems were
+* undestroyable, fixed an issue where drone counts were gettting doubled. Added battlecruiser drone launch ability. Modifed drones to be
+* kinematic to prevent external forces from affecting them. Added the flying dron scatter effect, when a drone is first created, it picks 
+* a random poing to fly towards, then after 20 seconds, switches it's target to the player. Fixed an issue with the heavy turret where it
+* was not computing the target location correctly.
+* Updatae: 4/28/2016, Reved to version 1.1.20 (Alpha 4), Fixed an issue where save prefs was not saving the has rocket or has guided rocket
+* values, fixed an issue where if the user picked up ammo before they had the weapon then they would only have the amount of ammo contained
+* in the ammo pack they picked up. Decreased the probability of crates spwaning ammo packs, added the posiblity of crates spawning rockets 
+* and guided rockets, added bool values to control which size of crates can spawn types of ammo and packs. Only large crates can spawn advanced
+* weapon packs. Added randomization to the initial timer of game events to prevent multiple events from triggering on the same frame.
+* modified the guided rocket so the angle at which it can turn is randomly rotated. Randomized the crate drop time. 
+* Update: 4/29/2016, Reved to version 1.1.21 (Alpha 4), Added special effects to the battle cruiser. Relocated grenade launcher to 2nd level
+* fixed an issue where it is not possible to pick up laser batteries before the laser gun is obtained. Increased the battle cruiser health
+* fixed an issue where the battle cruiser point defenses had a null for their explosion. Increased the grenade launcher ROF.
+* fixed an issue where collectable objects would sometimes start spinning if an object exploded near them. Increased the crate health
+* decreased the probability that a crate will generate ammo. Added level marker to upper catwalk.
+* Update: 4/30/2016, Reved to version 1.1.22 (Alpha 5) This may be released early since saving was broken in the last release, increased
+* the probability that an item will be spawned on a destroyed box slightly, added some saftey code in the DestroyByCollision script
+* reduced drone health slightly, reduced box health slightly. Added basic support for the capture rifle.
+* Update: 5/2/2016, Reved to version 1.1.23 (Alpha 7) Fixed an issue where the battle cruiser save function was saving multiple
+* copies of the cruiser in the same location.
+* Update: 5/4/2016, Reved to version 1.1.24 (Alpha 7) Fixed an issue with the capture gun, where the bullet was not centered correctly.
+* Update: 5/5/2016, Reved to version 1.1.25 (Alpha 7) Moved all text display functions off to the text parent game object. Modified all
+* weapons and weapon fire points to be collected dynamically.
+* Update: 5/6/2016, Reved to version 1.1.26 (Alpha 7) Fixed an issue where the capture dart launches totally quietly. Also made the capture
+* dart explode on contact with any object. Increased the size of the capture dart for better visability. Removed laser health from the destroy
+* by collision script, now just using one health value. Increased the drone health by a little. Preformed a minor refactor of the code to reduce
+* memory usage. Removed the audio source from all weapons, removed the reload sound from the weapons script, this has been moved to the 
+* FirstPersonController. Increased allied drone health. Fixed an issue where the number of drones destroyed text was being written before
+* it was initialized, fixed an issue where the number of drones killed was never being reset to 0. Added the capture gun object to the game.
+* Update: 5/7/2016, Reved to version 1.1.27 (Alpha 8), Modified the Flying drone code so it aquires targets on a timer instead of checking
+* every frame. Also modified this code to fire every frame further improving performance. Modified the drone so it manuvers on it's approach
+* and never stays still for very long. Further modified the attack drone to do as little as possible per frame. Modifed the game time
+* to run on a timer instead of checking every frame. Made the timer always have double digits. Increased the mass of crates and pickup
+* items, reduced the force of explosions. Fixed an issue where the heavy turret object was calling the drone created function. Optimized the
+* heavy turret script, to use Invoked timers instead of updating every frame. Modified the turret to no longer update every frame. Removed
+* the update function from ScreenText, invoke is now used exclsivly. Fixed an issue where temporary text could not be set until it auto-cleared.
+* fixed an issue where creating an allied drone would indicate a new enymy drone in the game. Optimized the allied drone script, by making
+* it use Invoke instead of updating every frame. Also modified the allied drone to search for battlecruisers. Decreased the max fire rate
+* of the grenade launcher. Modified drone launch operation to use Invoke instead of updating per frame. Fixed issues where ammo and weapon
+* holding states were being saved each time they changed. We now only save when we pass a check point. Added a new revision history document.
+* Update: 5/9/2016, Reved to version 1.1.28 (Alpha 8), Modified the guided rocket script to use Invoke. Now using invoke in the battle cruiser
+* script to launch drone waves. Modified the collection sript to use Invoke instead of update. Using invoke instead of update in the random
+* crate drop routine. Modified the splash screen to detect user's drag input, also remove the timer from update and used invoke instead.
+* modified all crates to generate the capture gun darts pack. Reduced the probability that crates will generate ammo. Added the initial components
+* for the SurvivalMode level, this new level will force the player to fight drones and battlecruisers until they are defeated. Fixed an issue 
+* where switching guns would reset ammo levels.
+* Update: 5/10/2016, Modified the battlecruiser so it faces the correct direction when moving. Added flight points for the battle cruiser 
+* to survival mode. Added code to end the game in the event that the player loses survival mode. Increased probability of crates giving
+* ammo. Added basic survival mode game dynamics. Added invisible walls to the survival mode course to prevent objects from bouncing out.
+* Reved to version 1.1.29
+* Update: 5/11/2016, Fixed an issue where the new SurvivalMode scene was not inluded in the build system. Modified the code to not save
+* survival mode game status. Reduced initial cruiser launch time. Pulled apart the game controller elements from the FirstpersonController
+* scrpt and created a new GameController script that will handle all game events. Reved to version 1.1.30. Removed the update function
+* from the LaunchTargets script. Made the game controller a prefab. Removed the update function from the pause script. Modified the 
+* code to update the number of drones in the game asynchonously. 
+* Update: 5/12/2016, Reved to verion 1.1.31, Combined the GameController and screen text scripts and objects. Preformed a refactor of the
+* game controller and FirstPersonController. Increased the firepower of the machine gun, so it is not so useless. Modified game to dynamically
+* set the weapon text instead of requireing that the text be assigned to the weapon script each time a new scene is added. Added the 
+* ammo generator object. This object randomly generates ammo for the player.
+* Update: 5/13/2016, Reved to version 1.1.32, Fixed an issue where the game was locking up on resume when paused. Fixed an issue in the
+* laser script where the weapon text component had not been set. Now using the game controller for this. Fixed an issue where the
+* drone destroyed count was not incrementing. Fixed an issue where ammo per weapon was not getting updated properly. Ammo levels are
+* now handled per weapon and per level. Fixed an issue where temporary text was not being displayed on game save operation. Added
+* level specific default settings. Defaults are now dynamic and will get set if they are not in the list. (instead of using the old
+* default value method). Modified all defaults to be dynamic. Fixed an issue where the score was not showing on the screen. Added
+* code to protect the game high score from settings erase. Added code to cleanup user settings. Added code to save the current
+* game time. Added the difficulty default setting but have not implemented it yet. Modified allied drones to go after the closest target
+* instead of just a random target.
+* Update: 5/16/2016, Reved to version 1.1.33, Fixed an issue where ammo levels were being saved even if no level marker was hit, now
+* we have a variable we use to track when and if ammo is getting pulled. Fixed an issue where game object states were not being saved
+* when a level marker is passed. Fixed an issue where the number of drones destroyed in the game was not being loaded on game start.
+* fixed an issue where the target sphere had no associated explosion. Fixed an issue where game objects were not being
+* loaded on game initialization. Eliminated a variable from the weapon script. Added code to save weapons by index. This will make the
+* weapons save operation more flexible. Also modfied this code to not save the weapons held unless a save point is reached. Fixed an 
+* issue where it was sometimes possible to get into the main menu without the cursor being visable and unlocked. Added code that zeros
+* out the player health if they leave the boundary. This prevents the main camera frome being destroyed, locking up the game. Modified
+* the launch tubes to launch objects in a more random direction. Displaying message on how to change weapons for non-mobile platforms.
+* Removed the maximum ammo level.
+* Update: 5/17/2016, Reved to version 1.1.34 (Alpha 10). Attempted to make game teams. Modified the weapon script to
+* instantiate an instance of the entire game object instead of just the rigidbody. Modified the battlecruiser so 
+* it can now fire rockets. Added code to make battlecruisers appear at random positions before their flyover.
+* added the health generation tube.
+* Update: 5/18/2016, Reved to version 1.1.35 (Alpha 10) Added the guided rocket launcher turret. Fixed the battle cruiser box
+* collider. Added rocket turrets to the battle cruiser.
+* Update: 5/19/2016, Reved to version 1.1.36 (Alpha 10) Added the general turret script. This script is designed to be used
+* as general purpose turret code. Removed the second collider from the first person controller (this collider was causing issues)
+* related to health drops. Replaced the heavy turret script with the turret script. Modified the evil guided rocket to use
+* a different tag to avoid point defenses. Replaced the Rocket turret script with the turret script. Removed the evil rocket
+* script and replaced it with a slightly modified version of the rocket script. Modified the guided rockets to seek out allied drones
+* as well.
+* Update: 5/20/2016, Reved to version 1.1.37 (Alpha 10), relinked all the missing battlecruiser game objects, attached the rocket
+* launchers to the wings so they will be destroyed when the windws are. Removed a missing script from the change weapon button
+* (android). Added a light to the bottom of the battlecruiser. Fixed an issue where items were falling through the floor in survival mode.
+* fixed an issue where drones and drone counts were being saved without a save point. Added one basic script to handle all drones. 
+* made the allied drone script and the attack drone script use the same "Drone" script for code consolidation. Attempted to address an
+* issue related to the splash screen not responding to user inputs. Fixed an issue where capture darts were not being generated.\
+* increased max rotation of guided rocket. Increased time before rocket detonates. Every 3 cruisers the game sends one to target the player.

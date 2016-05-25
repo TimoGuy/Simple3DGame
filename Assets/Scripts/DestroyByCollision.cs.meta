@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: cb83b78049285004fa4f84b928ffe723
+timeCreated: 1462795493
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - spawnObject: {instanceID: 0}
+  - MachineGunAmmo: {fileID: 100442, guid: b9a6469693a25e84cab15ca0913de4e3, type: 2}
+  - RifleAmmo: {fileID: 176756, guid: d7f58639f5b5c0542a198a59e087e8f0, type: 2}
+  - GrenadeAmmo: {fileID: 199382, guid: e0a512e4a16effe43aa57686419da646, type: 2}
+  - LaserBatteries: {fileID: 146736, guid: 97de9c3e8a786f547b2aea41d34ff13e, type: 2}
+  - RocketPack: {fileID: 199986, guid: a0d92d43010814e47b64dfe465076db0, type: 2}
+  - GuidedRocketPack: {fileID: 110162, guid: 14e24d9de6277ab489d845ce1371a1c7, type: 2}
+  - AlliedDroneModel: {fileID: 159512, guid: 2c12f0a0a2f9f3f468214300b9445aed, type: 2}
+  - captureGunPack: {fileID: 120462, guid: 95002cf6e529fff4c8424e16815f1ea0, type: 2}
+  - HealthPack: {fileID: 156102, guid: 64489adf693aecb4d9a51a3871668b39, type: 2}
+  - explosion: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
