@@ -57,11 +57,24 @@ public class LaunchPickups : MonoBehaviour {
 
 		Rigidbody blast_clone = Instantiate (launch_object, transform.position, transform.rotation) as Rigidbody;
 		blast_clone.velocity = new Vector3 (Random.Range(5, 20), Random.Range(25, 50), Random.Range(3, 15));
+		int difficulty = PlayerPrefs.GetInt ("AILevel");
 
 		if (health_only) {
-			Invoke ("LaunchAmmo", Random.Range (60.0F, 120.0F));
+			if (difficulty == 0) {
+				Invoke ("LaunchAmmo", Random.Range (60.0F, 120.0F));
+			} else if (difficulty == 1) {
+				Invoke ("LaunchAmmo", Random.Range (90, 190.0F));
+			} else if (difficulty == 2) {
+				Invoke ("LaunchAmmo", Random.Range (120, 215.0F));
+			}
 		} else {
-			Invoke ("LaunchAmmo", Random.Range (20.0F, 25.0F));
+			if (difficulty == 0) {
+				Invoke ("LaunchAmmo", Random.Range (30.0F, 45.0F));
+			} else if (difficulty == 1) {
+				Invoke ("LaunchAmmo", Random.Range (45.0F, 90.0F));
+			} else if (difficulty == 2) {
+				Invoke ("LaunchAmmo", Random.Range (90.0F, 120.0F));
+			}
 		}
 
 	}

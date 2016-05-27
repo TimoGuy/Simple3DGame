@@ -12,7 +12,7 @@ public class Laser : MonoBehaviour {
 	private float chargeTime;
 	public AudioClip fireSound;
 	public GameObject sparks;
-	public GameObject gameController;
+	private GameObject gameController;
 	private bool ammo_pulled = false;
 	// Use this for initialization
 
@@ -20,6 +20,7 @@ public class Laser : MonoBehaviour {
 	{
 		string save_string = SceneManager.GetActiveScene ().name + "_" + "batteryCharge";
 		PlayerPrefs.SetInt (save_string, batteryCharge);
+		InvokeRepeating ("ScanTarget", Random.Range(0.5F, 1.0F), 0.5F);
 	}
 	public void WeaponActive()
 	{
@@ -34,10 +35,86 @@ public class Laser : MonoBehaviour {
 				batteryCharge += 500;
 				Destroy (battery);
 				DisplayWeaponStatus ();
-				//SaveAmmo ();
 			}
 		}
 
+	}
+
+	public void ScanTarget()
+	{
+		if (gameObject.activeSelf) {
+			Ray ray = new Ray (transform.position, transform.forward);
+			RaycastHit hit;
+			string text = "";
+			if (Physics.Raycast (ray, out hit, 9999)) {
+				if (hit.transform.CompareTag ("Crate")) {
+					text = "Ammo Crate\nDestroyable";
+				} else if (hit.transform.CompareTag ("AlliedDrone")) {
+					text = "Allied Drone\nDO NOT FIRE!";
+				}
+				else if (hit.transform.CompareTag ("AlliedPortal")) {
+					text = "Allied Portal\nDO NOT FIRE!";
+				}
+				else if (hit.transform.CompareTag ("AttackDrone")) {
+					text = "Attack Drone\nDestroy with\nExtreme Prejudice";
+				}
+				else if (hit.transform.CompareTag ("BattleCruiser")) {
+					text = "BattleCruiser\nWARNING\nUnit is heavily armed!";
+				}
+				else if (hit.transform.CompareTag ("HeavyTurret")) {
+					text = "Heavy Turret\nWARNING\nDon't allow it to fire!";
+				}
+				else if (hit.transform.CompareTag ("PointDefense")) {
+					text = "Point Defense\nWARNING\nRockets are ineffective\nAgainst target";
+				}
+				else if (hit.transform.CompareTag ("Portal")) {
+					text = "Portal\nWARNING\nDestroy before more\nDrones come through!";
+				}
+				//else if (hit.transform.CompareTag ("RocketTurret")) {
+				//	text = "Rocket Turret\nWARNING\nDestroy before it can fire!";
+				//}
+				else if (hit.transform.CompareTag ("AlliedTacticalDrone")) {
+					text = "Allied Tactical Drone\nDO NOT FIRE!";
+				}
+				else if (hit.transform.CompareTag ("TacticalDrone")) {
+					text = "Tactical Drone\nWARNING\nDestroy with\nExtreme Prejudice";
+				}
+				else if (hit.transform.CompareTag ("Turret")) {
+					text = "Turret\nWARNING\nDestroy with\nExtreme Prejudice";
+				}
+				else if (hit.transform.CompareTag ("LevelMarker")) {
+					text = "Level Marker\nWalk through\nThis to save\tthe game";
+				}
+				else if (hit.transform.CompareTag ("DestroyableWall")) {
+					text = "Wall is destroyable";
+				}
+				else if (hit.transform.CompareTag ("CaptureGunPickup")) {
+					text = "Capture Gun\nPick this up\nAnd you can\nCapture enemy drones";
+				}
+				else if (hit.transform.CompareTag ("GrenadeLauncherPickup")) {
+					text = "Grenade Launcher\nPick this up\nto fire grenades\n";
+				}
+				else if (hit.transform.CompareTag ("HealthPack")) {
+					text = "Health Pack\nPick this up\nto gain more\nhealth";
+				}
+				else if (hit.transform.CompareTag ("LaserGunPickup")) {
+					text = "Laser Gun\nPick this up\nto fire a\ndirected energy\nbeam at targets";
+				}
+				else if (hit.transform.CompareTag ("MachineGunPickup")) {
+					text = "Machine Gun\nPick this up\nto fire bullets\nrapidly at targets";
+				}
+				else if (hit.transform.CompareTag ("RocketLauncherPickup")) {
+					text = "Rocket Launcher\nPick this up\nto fire rockets\nat targets";
+				}
+				else if (hit.transform.CompareTag ("GuidedRocketLauncherPickup")) {
+					text = "Guided Rocket Launcher\nPick this up\nto fire guided rockets\nat targets";
+				}
+				else if (hit.transform.CompareTag ("RocketTurret")) {
+					text = "Rocket Turret\nWARNING\nLaunches guided rockets\nAt targets";
+				}
+				gameController.SendMessage ("SetTargetText", text);
+			}
+		}
 	}
 
 	public void DeleteAmmoLevel()

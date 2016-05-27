@@ -7,31 +7,6 @@
 * can before you are overwhelmed and destroyed.
 * Author: Jonathan L Clark
 * Date: 3/8/2016
-* Update: 5/21/2016, Reved to version 1.1.38 (Alpha 11). Added UI components to support
-* easy medium and hard difficulty settings. Modified collision events to take more to destroy 
-* a given object when the difficulty level is set higher. Drones are harder on harder levels.
-* Added multiple levels in the drone controller for different speeds. Also added rates of fire
-* for each difficulty level. Adjusted drone and cruiser launch times according to difficulty level.
-* added the allied portal, this portal generates allied drones to fight with you in the game.
-* Update: 5/23/2016, Reved to version 1.1.39, (Alpha 11) Added the tactical drone object. This new
-* unit not only is bigger and tougher it also fires rockets at its intended target. Also fixed an issue
-* where portals were being attacked by the AI in survival mode.
-* Update: 5/24/2016, Reved to version 1.1.40, (Alpha 11) Modified all AI targeting to Raycast first
-* to ensure that the desired target is in a clear line of sight and to reduce friendly fire. Modified
-* the tactical drone to use a machine gun and alternate between that and launching rockets. Reduced the
-* amount that targets are aquired in the turret script. Modified the capture dart
-* to work on tactical drones. Modified light turrets so that the entire turret must be destroyed
-* not just the head. Added code to support a better ranged secondary weapon for tactical drones. Added
-* tactical drone creation to the game controller. Modified the battle cruiser to drop tactical drones.
-* added code to prevent drones from targeting things that cannot be hit.
-* Update: 5/25/2016, Reved to version 1.1.41 (Alpha 11) Fixed a minor issue where the raycast from the 
-* turret script and drone script was not taking into account the range of the ammo. Fixed an issue where the
-* battlecruisers destruction was causing all the drones to self destruct. Fixed an issue wher allied portals 
-* are destroyable in survival mode. Removed colliders from weapons as these were interfering with the
-* drone targeting. Adjusted the player controller object so all child objects are centered (as this was
-* also interfering with the drone targeting.) Modified the GameController to not launch a tactical drone
-* first. Added the new targeting hud text, this text activly tracks objects that the player is pointing to
-* and identifies them.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -135,7 +110,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			//for (int i = 0; i < currentWeapons.Length; i++) {
 			//	currentWeapons [i] = 0;
 			//}
-
+			LoadWeapons ();
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				LoadPrefs ();
 			}
@@ -148,7 +123,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			{
 				currentWeapons [0] = 1; //Always have the rifle
 			}
-			LoadWeapons ();
+
 			lastSaveTime = Random.Range(5.00F, 30.0F);
 			Invoke ("InitialDisplay", 0.5F);
 			SwitchWeapons(curWeapon, true);
@@ -216,12 +191,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			curWeapon = SafeLoadPref ("curWeapon", 0);
 			health = SafeLoadPref ("health", 100);
 			lives = SafeLoadPref ("lives", 5);
-			currentWeapons [6] = SafeLoadPref ("hasCaptureGun", 0);//PlayerPrefs.GetInt ("hasCaptureGun");
-			currentWeapons[5] = SafeLoadPref ("hasGuidedRocket", 0);//PlayerPrefs.GetInt("hasGuidedRocket");
-			currentWeapons[4] = SafeLoadPref ("hasRocket", 0);//PlayerPrefs.GetInt("hasRocket");
-			currentWeapons[3] = SafeLoadPref ("hasLaser", 0);//PlayerPrefs.GetInt ("hasLaser");
-			currentWeapons[2] = SafeLoadPref ("hasMachineGun", 0);//PlayerPrefs.GetInt ("hasMachineGun");
-			currentWeapons[1] = SafeLoadPref ("hasGrenadeLauncher", 0);//PlayerPrefs.GetInt ("hasGrenadeLauncher");
+			currentWeapons [6] = SafeLoadPref ("Weapon_6", 0);//PlayerPrefs.GetInt ("hasCaptureGun");
+			currentWeapons[5] = SafeLoadPref ("Weapon_5", 0);//PlayerPrefs.GetInt("hasGuidedRocket");
+			currentWeapons[4] = SafeLoadPref ("Weapon_4", 0);//PlayerPrefs.GetInt("hasRocket");
+			currentWeapons[3] = SafeLoadPref ("Weapon_3", 0);//PlayerPrefs.GetInt ("hasLaser");
+			currentWeapons[2] = SafeLoadPref ("Weapon_2", 0);//PlayerPrefs.GetInt ("hasMachineGun");
+			currentWeapons[1] = SafeLoadPref ("Weapon_1", 0);//PlayerPrefs.GetInt ("hasGrenadeLauncher");
 			if (startX == 0.0F && startY == 0.0F && startZ == 0.0F) {
 			} else {
 				transform.position = new Vector3(startX, startY, startZ + 5.0F);
@@ -311,12 +286,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			PlayerPrefs.DeleteKey ("health" +  "_" + SceneManager.GetActiveScene ().name);
 			PlayerPrefs.DeleteKey ("lives" +  "_" + SceneManager.GetActiveScene ().name);
 			PlayerPrefs.DeleteKey ("curWeapon" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("hasRocket" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("hasGuidedRocket" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("hasCaptureGun" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("hasMachineGun" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("hasLaser" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("hasGrenadeLauncher" + "_" + SceneManager.GetActiveScene ().name);
+			PlayerPrefs.DeleteKey ("Weapon_1" + "_" + SceneManager.GetActiveScene ().name);
+			PlayerPrefs.DeleteKey ("Weapon_2" + "_" + SceneManager.GetActiveScene ().name);
+			PlayerPrefs.DeleteKey ("Weapon_3" + "_" + SceneManager.GetActiveScene ().name);
+			PlayerPrefs.DeleteKey ("Weapon_4" + "_" + SceneManager.GetActiveScene ().name);
+			PlayerPrefs.DeleteKey ("Weapon_5" + "_" + SceneManager.GetActiveScene ().name);
+			PlayerPrefs.DeleteKey ("Weapon_6" + "_" + SceneManager.GetActiveScene ().name);
 		}
 
 		/********************************************
@@ -756,14 +731,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				captureGun.SetActive (true);
 				captureGunFirePoint.SendMessage ("SaveAmmo");
 				captureGun.SetActive (false);
+				//Save weapons
+				for (int i = 0; i < currentWeapons.Length; i++) {
+					PlayerPrefs.SetInt ("Weapon_" + i.ToString() + "_" + SceneManager.GetActiveScene ().name, currentWeapons[i]);
+				}
 				SavePrefs ();
 				SwitchWeapons (curWeapon, false);
 				gameController.SendMessage ("SaveGame");
 				gameController.SendMessage("SetTempText", "Game Saved");
-				//Save weapons
-				for (int i = 0; i < currentWeapons.Length; i++) {
-					PlayerPrefs.SetInt (i.ToString() + "_" + SceneManager.GetActiveScene ().name, currentWeapons[i]);
-				}
+
 				lastSaveTime = Time.time + 10; //Prevents too many rapid save operations at a time.
 				
 			}
@@ -771,6 +747,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		void OnCollisionEnter(Collision other)
 		{
+			if (other.gameObject.tag.Contains ("Rocket")) {
+#if !MOBILE_INPUT
+				ReduceHealth(20);
+#else
+				ReduceHealth(10);
+#endif
+				Destroy(other.gameObject);
+			}
 			if (other.gameObject.tag.Contains ("Explosion")) {
 				ReduceHealth(5);
 				Destroy(other.gameObject);

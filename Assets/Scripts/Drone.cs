@@ -118,6 +118,7 @@ public class Drone : MonoBehaviour {
 			target = GameObject.FindGameObjectWithTag ("Player").transform;//GameObject.FindObjectOfType<UnityStandardAssets.Characters.FirstPerson.FirstPersonController> ().transform;
 			start_dist = Vector3.Distance (target.position, transform.position);
 			start_dist = AquireTarget ("AlliedDrone", start_dist);
+			start_dist = AquireTarget ("AlliedTacticalDrone", start_dist);
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				start_dist = AquireTarget ("AlliedPortal", start_dist);
 			}

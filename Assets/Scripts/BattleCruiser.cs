@@ -27,7 +27,7 @@ public class BattleCruiser : MonoBehaviour {
 		}
 		standoffPosition = target.position;
 		standoffPosition.y = transform.position.y;
-		Invoke ("StartDroneWave", Random.Range (1.00F, 15.0F)); 
+		Invoke ("StartDroneWave", Random.Range (1.00F, 5.0F)); 
 	}
 
 	public void SetMode(int mode)
@@ -57,7 +57,14 @@ public class BattleCruiser : MonoBehaviour {
 		Vector3 droneLaunchPoint = transform.position;
 		droneLaunchPoint.y -= 5;
 		Instantiate (droneModel, droneLaunchPoint, transform.rotation);
-		Invoke ("LaunchNextDrone", 3.0F);
+		int difficulty = PlayerPrefs.GetInt ("AILevel");
+		if (difficulty == 0) {
+			Invoke ("LaunchNextDrone", 3.0F);
+		} else if (difficulty == 1) {
+			Invoke ("LaunchNextDrone", 2.0F);
+		} else if (difficulty == 2) {
+			Invoke ("LaunchNextDrone", 1.0F);
+		}
 	}
 
 	private void LaunchNextDrone()
@@ -69,12 +76,19 @@ public class BattleCruiser : MonoBehaviour {
 		} else {
 			Instantiate (droneModel, droneLaunchPoint, transform.rotation);
 		}
+		int difficulty = PlayerPrefs.GetInt ("AILevel");
 		droneCount++;
 		if (droneCount == 5) {
 			droneCount = 0;
-			Invoke ("StartDroneWave", Random.Range (1.00F, 15.0F));
+			Invoke ("StartDroneWave", Random.Range (1.00F, 5.0F));
 		} else {
-			Invoke ("LaunchNextDrone", 3.0F);
+			if (difficulty == 0) {
+				Invoke ("LaunchNextDrone", 3.0F);
+			} else if (difficulty == 1) {
+				Invoke ("LaunchNextDrone", 2.0F);
+			} else if (difficulty == 2) {
+				Invoke ("LaunchNextDrone", 1.0F);
+			}
 		}
 
 	}

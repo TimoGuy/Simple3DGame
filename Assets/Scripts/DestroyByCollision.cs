@@ -51,8 +51,7 @@ public class DestroyByCollision : MonoBehaviour {
 
 	public void HitByLaser()
 	{
-		int difficulty = PlayerPrefs.GetInt ("AILevel");
-		if (DetectLaserHits && iterations_laser_hit == difficulty) {
+		if (DetectLaserHits) {
 			health--;
 			iterations_laser_hit = 0;
 			if (health < 0) {
@@ -180,7 +179,7 @@ public class DestroyByCollision : MonoBehaviour {
 			//Ammo pack is created when this object is destroyed
 			if (SpawnAmmoOnDeath)
 			{
-				int value = Random.Range (1, 16);
+				int value = Random.Range (1, 13);
 				if (value == 3 && MachineGunAmmo != null) {
 					Instantiate (MachineGunAmmo, newPosition, rb.rotation);
 				} else if (value == 4 && GrenadeAmmo != null) {
@@ -200,7 +199,7 @@ public class DestroyByCollision : MonoBehaviour {
 			//Health is randomly spawned on death
 			if (SpawnHealthOnDeath)
 			{
-				int value = Random.Range (1, 4);
+				int value = Random.Range (1, 6);
 				if (value != 2)
 				{
 					Instantiate (HealthPack, newPosition, rb.rotation);

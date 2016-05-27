@@ -28,7 +28,7 @@ public class WeaponScript : MonoBehaviour {
 		detonation_time = 5;
 		GetAmmoLevel ();
 		Invoke ("DisplayWeaponText", 0.5F);
-		InvokeRepeating ("ScanTarget", Random.Range(1.0F, 0.5F), 0.5F);
+		InvokeRepeating ("ScanTarget", Random.Range(0.5F, 1.0F), 0.5F);
 	}
 
 	public void DeleteAmmoLevel()
@@ -111,6 +111,9 @@ public class WeaponScript : MonoBehaviour {
 				}
 				else if (hit.transform.CompareTag ("GuidedRocketLauncherPickup")) {
 					text = "Guided Rocket Launcher\nPick this up\nto fire guided rockets\nat targets";
+				}
+				else if (hit.transform.CompareTag ("RocketTurret")) {
+					text = "Rocket Turret\nWARNING\nLaunches guided rockets\nAt targets";
 				}
 				gameController.SendMessage ("SetTargetText", text);
 			}

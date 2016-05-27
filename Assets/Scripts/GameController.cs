@@ -22,7 +22,7 @@ public class GameController : MonoBehaviour {
 	//private int numDronesKilled = 0;
 	private int dronesCreated = 0;
 	private int alliedDronesCreated = 0;
-	private float droneLaunchTime = 30;
+	private float droneLaunchTime = 20;
 	private float cruiserLaunchTime = 300.0F;
 	private UnityEngine.UI.Text hudText;
 	private UnityEngine.UI.Text healthText;
@@ -45,17 +45,17 @@ public class GameController : MonoBehaviour {
 	void Start () {
 		int difficulty = PlayerPrefs.GetInt ("AILevel");
 		if (difficulty == 0) {
-			default_drone_launch_time = 30;
+			default_drone_launch_time = 45;
 			droneLaunchTime = 30;
 			cruiserLaunchTime = 300;
 			tactical_drone_launch_bound = 20;
 		} else if (difficulty == 1) {
-			default_drone_launch_time = 20;
+			default_drone_launch_time = 30;
 			droneLaunchTime = 20;
 			cruiserLaunchTime = 250;
 			tactical_drone_launch_bound = 10;
 		} else {
-			default_drone_launch_time = 15;
+			default_drone_launch_time = 20;
 			droneLaunchTime = 15;
 			cruiserLaunchTime = 150;
 			tactical_drone_launch_bound = 5;
@@ -248,6 +248,8 @@ public class GameController : MonoBehaviour {
 		LoadGameObject("BattleCruiser", battleCruiserObject);
 		LoadGameObject("HeavyTurret", heavyTurretObject);
 		LoadGameObject("Turret", turretObject);
+		LoadGameObject("TacticalDrone", TacticalDroneModel);
+		LoadGameObject("AlliedTacticalDrone", AlliedTacticalDroneModel);
 	}
 
 	/*****************************************************
@@ -263,6 +265,8 @@ public class GameController : MonoBehaviour {
 		SaveGameObject ("BattleCruiser");
 		SaveGameObject ("HeavyTurret");
 		SaveGameObject ("Turret");
+		SaveGameObject ("TacticalDrone");
+		SaveGameObject ("AlliedTacticalDrone");
 		//PlayerPrefs.Save ();
 	}
 
@@ -338,7 +342,7 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	private void DisplayStatusText()
 	{
-		hudText.text = "Ver: 1.1.41 (Alpha)";
+		hudText.text = "Ver: 1.1.43 (Alpha)";
 		hudText.text += "\nGame Time: " + PrintDoubleDigits(gameTimeHours) + ":" + PrintDoubleDigits(gameTimeMinutes) + ":" + PrintDoubleDigits(gameTimeSeconds);
 		hudText.text += "\nHigh Score: " + highScore.ToString ();
 		hudText.text += "\nScore: " + scoreValue.ToString ();
@@ -452,7 +456,7 @@ public class GameController : MonoBehaviour {
 			}
 			alliedDronesCreated++;
 		}
-		Invoke ("LaunchAlliedDrone", 15.0F);
+		Invoke ("LaunchAlliedDrone", 45.0F);
 	}
 
 	/*****************************************************

@@ -12,7 +12,7 @@ public class GuidedRocket : MonoBehaviour {
 	void Start () {
 		rb = GetComponent<Rigidbody> ();
 		Invoke ("detonate", 60.0F);
-		InvokeRepeating ("FindTarget", Random.Range (0.2F, 0.3F), 0.5F);
+		InvokeRepeating ("FindTarget", Random.Range (0.2F, 0.3F), 5.0F);
 		InvokeRepeating ("AimAtTarget", Random.Range (0.5F, 0.6F), 0.3F);
 	}
     
@@ -57,9 +57,11 @@ public class GuidedRocket : MonoBehaviour {
 			start_dist = AquireTarget ("BattleCruiser", start_dist);
 			start_dist = AquireTarget ("HeavyTurret", start_dist);
 			start_dist = AquireTarget ("Turret", start_dist);
+			start_dist = AquireTarget ("TacticalDrone", start_dist);
 		} else {
 			start_dist = AquireTarget ("Player", start_dist);
 			start_dist = AquireTarget ("AlliedDrone", start_dist);
+			start_dist = AquireTarget ("AlliedTacticalDrone", start_dist);
 		}
 	}
 

@@ -223,3 +223,43 @@
 * made the allied drone script and the attack drone script use the same "Drone" script for code consolidation. Attempted to address an
 * issue related to the splash screen not responding to user inputs. Fixed an issue where capture darts were not being generated.\
 * increased max rotation of guided rocket. Increased time before rocket detonates. Every 3 cruisers the game sends one to target the player.
+* Update: 5/21/2016, Reved to version 1.1.38 (Alpha 11). Added UI components to support
+* easy medium and hard difficulty settings. Modified collision events to take more to destroy 
+* a given object when the difficulty level is set higher. Drones are harder on harder levels.
+* Added multiple levels in the drone controller for different speeds. Also added rates of fire
+* for each difficulty level. Adjusted drone and cruiser launch times according to difficulty level.
+* added the allied portal, this portal generates allied drones to fight with you in the game.
+* Update: 5/23/2016, Reved to version 1.1.39, (Alpha 11) Added the tactical drone object. This new
+* unit not only is bigger and tougher it also fires rockets at its intended target. Also fixed an issue
+* where portals were being attacked by the AI in survival mode.
+* Update: 5/24/2016, Reved to version 1.1.40, (Alpha 11) Modified all AI targeting to Raycast first
+* to ensure that the desired target is in a clear line of sight and to reduce friendly fire. Modified
+* the tactical drone to use a machine gun and alternate between that and launching rockets. Reduced the
+* amount that targets are aquired in the turret script. Modified the capture dart
+* to work on tactical drones. Modified light turrets so that the entire turret must be destroyed
+* not just the head. Added code to support a better ranged secondary weapon for tactical drones. Added
+* tactical drone creation to the game controller. Modified the battle cruiser to drop tactical drones.
+* added code to prevent drones from targeting things that cannot be hit.
+* Update: 5/25/2016, Reved to version 1.1.41 (Alpha 11) Fixed a minor issue where the raycast from the 
+* turret script and drone script was not taking into account the range of the ammo. Fixed an issue where the
+* battlecruisers destruction was causing all the drones to self destruct. Fixed an issue wher allied portals 
+* are destroyable in survival mode. Removed colliders from weapons as these were interfering with the
+* drone targeting. Adjusted the player controller object so all child objects are centered (as this was
+* also interfering with the drone targeting.) Modified the GameController to not launch a tactical drone
+* first. Added the new targeting hud text, this text activly tracks objects that the player is pointing to
+* and identifies them.
+* Update: 5/26/2016, Reved to version 1.1.42 (Alpha 11) Fixed an issue where the rocket turret was not aiming
+* at its targets. Added the new tactical drone to the turret script. Fixed an issue where evil drones were not
+* targeting allied tactical drones. Fixed an issue where the rocket turret had no ridgid body. Added the tactical
+* drone and allied tactical drone to the game objects that get loaded on start. Modified the guided rocket
+* to look for the new tactical drones. Added rocekt launcher to bottom of battle cruiser. Modified code to
+* so the player can be hit by rockets. Decreased the rate at which allied drones are launched. Increased enemy 
+* drone prodjuction in survival mode. Modified the rocket turret to move it's head while targeting (not the entire
+* turret).
+* Update: 5/27/2016, Reved to version 1.1.43 (Alpha 11), Modified the guided rocket to only re-aquire a target every 5 seconds.
+* modified launch tubes to launch health and ammo at different rates depending on difficulty level. Modified cruiser to drop
+* drones more frequently and to drop drones more frequently based on the difficulty. Removed difficulty from laser
+* as this was breaking the laser weapon. Added target scanning to the laser weapon. Added more health to the main level
+* reduced the rate of drone production on the main level, increased the probability that crates would generate ammo
+* and health on destruction. Fixed an issue where the game was not saving the weapons. The weapon's were saved by index key
+* but being loaded by name. Now they are saved by index key.

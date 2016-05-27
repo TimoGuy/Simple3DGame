@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class Turret : MonoBehaviour {
 
@@ -79,12 +80,20 @@ public class Turret : MonoBehaviour {
 		if (isAllied) {
 			start_dist = FindClosestTarget ("AttackDrone", start_dist);
 			start_dist = FindClosestTarget ("Turret", start_dist);
+			start_dist = FindClosestTarget ("TacticalDrone", start_dist);
 			start_dist = FindClosestTarget ("HeavyTurret", start_dist);
 			start_dist = FindClosestTarget ("BattleCruiser", start_dist);
+			if (!SceneManager.GetActiveScene ().name.Equals ("Portal")) {
+				start_dist = FindClosestTarget ("AlliedPortal", start_dist);
+			}
 		} else {
-			target = GameObject.FindObjectOfType<UnityStandardAssets.Characters.FirstPerson.FirstPersonController> ().transform;
+			target = GameObject.FindGameObjectWithTag ("Player").transform;
 			start_dist = Vector3.Distance (target.position, transform.position);
-			FindClosestTarget ("AlliedDrone", start_dist);
+			start_dist = FindClosestTarget ("AlliedDrone", start_dist);
+			start_dist = FindClosestTarget ("AlliedTacticalDrone", start_dist);
+			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
+				start_dist = FindClosestTarget ("AlliedPortal", start_dist);
+			}
 		}
 	}
 
@@ -110,8 +119,6 @@ public class Turret : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		if (!bullet.CompareTag ("EvilRocket")) {
-			transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * targetingSpeed);
-		}
+		 transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * targetingSpeed);
 	}
 }
