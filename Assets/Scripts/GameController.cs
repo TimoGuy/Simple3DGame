@@ -342,7 +342,7 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	private void DisplayStatusText()
 	{
-		hudText.text = "Ver: 1.1.43 (Alpha)";
+		hudText.text = "Ver: 1.1.44 (Alpha)";
 		hudText.text += "\nGame Time: " + PrintDoubleDigits(gameTimeHours) + ":" + PrintDoubleDigits(gameTimeMinutes) + ":" + PrintDoubleDigits(gameTimeSeconds);
 		hudText.text += "\nHigh Score: " + highScore.ToString ();
 		hudText.text += "\nScore: " + scoreValue.ToString ();

@@ -7,6 +7,10 @@
 * can before you are overwhelmed and destroyed.
 * Author: Jonathan L Clark
 * Date: 3/8/2016
+* Update: 5/28/2016, Reved to version 1.1.44 (Alpha 12), Improved the guided rocket
+* now the rocket sends a raycast to find any target directly in front of it before
+* attempting to aquire another target. Rocket turn radius has been decreased for better
+* accuracy. Modified the rocket trails to look better when the rockets turn and curve.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;

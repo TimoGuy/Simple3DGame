@@ -12,8 +12,9 @@ public class GuidedRocket : MonoBehaviour {
 	void Start () {
 		rb = GetComponent<Rigidbody> ();
 		Invoke ("detonate", 60.0F);
-		InvokeRepeating ("FindTarget", Random.Range (0.2F, 0.3F), 5.0F);
-		InvokeRepeating ("AimAtTarget", Random.Range (0.5F, 0.6F), 0.3F);
+		FindTarget ();
+		InvokeRepeating ("FindTarget", 5.0F, 5.0F);
+		//InvokeRepeating ("AimAtTarget", Random.Range (0.5F, 0.6F), 0.3F);
 	}
     
 	private void detonate()
@@ -53,26 +54,50 @@ public class GuidedRocket : MonoBehaviour {
 	{
 		float start_dist = 10000;
 		if (isAllied) {
-			start_dist = AquireTarget ("AttackDrone", start_dist);
-			start_dist = AquireTarget ("BattleCruiser", start_dist);
-			start_dist = AquireTarget ("HeavyTurret", start_dist);
-			start_dist = AquireTarget ("Turret", start_dist);
-			start_dist = AquireTarget ("TacticalDrone", start_dist);
+			//Cast a ray and see if a target is right in front
+			Ray ray = new Ray (transform.position, transform.forward);
+			RaycastHit hit;
+			string text = "";
+			if (Physics.Raycast (ray, out hit, 9999))
+			{
+				if (hit.transform.CompareTag ("AttackDrone") || hit.transform.CompareTag ("BattleCruiser") ||
+				    hit.transform.CompareTag ("HeavyTurret") || hit.transform.CompareTag ("Turret") ||
+				    hit.transform.CompareTag ("TacticalDrone")) {
+					target = hit.transform.gameObject;
+					start_dist = 0;
+				}
+			}
+			if (start_dist > 0) {
+				start_dist = AquireTarget ("AttackDrone", start_dist);
+				start_dist = AquireTarget ("BattleCruiser", start_dist);
+				//start_dist = AquireTarget ("HeavyTurret", start_dist);
+				//start_dist = AquireTarget ("Turret", start_dist);
+				start_dist = AquireTarget ("TacticalDrone", start_dist);
+			}
 		} else {
-			start_dist = AquireTarget ("Player", start_dist);
-			start_dist = AquireTarget ("AlliedDrone", start_dist);
-			start_dist = AquireTarget ("AlliedTacticalDrone", start_dist);
+			Ray ray = new Ray (transform.position, transform.forward);
+			RaycastHit hit;
+			string text = "";
+			if (Physics.Raycast (ray, out hit, 9999))
+			{
+				if (hit.transform.CompareTag ("Player") || hit.transform.CompareTag ("AlliedDrone") ||
+					hit.transform.CompareTag ("AlliedTacticalDrone")) {
+					target = hit.transform.gameObject;
+					start_dist = 0;
+				}
+			}
+			if (start_dist > 0) {
+				start_dist = AquireTarget ("Player", start_dist);
+				start_dist = AquireTarget ("AlliedDrone", start_dist);
+				start_dist = AquireTarget ("AlliedTacticalDrone", start_dist);
+			}
 		}
 	}
 
 	// Update is called once per frame
 	void Update () {
-		//Target is available so aim for it.
-		if (target != null) {
-			transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * Random.Range (0.3F, 0.5F));
-			rb.velocity = transform.forward * 80;
-		} else {
-			FindTarget ();
-		}
+		look = Quaternion.LookRotation (target.transform.position - transform.position);
+		transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * 1.0F);
+		rb.velocity = transform.forward * 80;
 	}
 }

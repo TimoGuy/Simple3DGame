@@ -60,7 +60,7 @@ public class Drone : MonoBehaviour {
 			secondaryRange = hardSecRange;
 		}
 
-		InvokeRepeating ("AquireTargets", Random.Range(0.1F, 1.0F), 5.0F);
+		InvokeRepeating ("AquireTargets", Random.Range(0.1F, 1.0F), 10.0F);
 		if (isTactical) {
 			//InvokeRepeating ("FireSecondaryAtTarget", Random.Range (1.0F, 3.0F), 1.0F);
 			Invoke("FireAtTarget", Random.Range(0.5F, 1.0F));
@@ -123,7 +123,7 @@ public class Drone : MonoBehaviour {
 				start_dist = AquireTarget ("AlliedPortal", start_dist);
 			}
 		}
-		AquirePositionTarget();
+		AquirePositionTarget ();
 	}
 
 	/*************************************************************
