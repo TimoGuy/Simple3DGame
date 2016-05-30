@@ -11,6 +11,10 @@
 * now the rocket sends a raycast to find any target directly in front of it before
 * attempting to aquire another target. Rocket turn radius has been decreased for better
 * accuracy. Modified the rocket trails to look better when the rockets turn and curve.
+* Update: 5/30/2016, Reved to version 1.1.45 (Alpha 12), Replaced the health text with a
+* health bar. This bar indicates how much health the user has. Fixed an issue on exit
+* wher the guided rocket is attempting to access the target game object. Added
+* the option to rotate the view using the accelerometor.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -580,30 +584,49 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			if (Time.timeScale > 0) {
                m_MouseLook.LookRotation (transform, m_Camera.transform);
 			}
+
 #else
-			int xSectionSize = Screen.width / 4;
-			int ySectionSize = Screen.height / 4;
-
-			//Find the first touch that is within range of the screen
-			for (int i = 0; i < Input.touchCount; i++)
+			if (PlayerPrefs.GetInt("UseGyro") == 1)// && Input.gyro.enabled)
 			{
-				if (Input.GetTouch(i).position.y > ySectionSize && Input.GetTouch(i).position.x > xSectionSize)
-				{
-			       
-					float rotateYSpeed = 200.0F * PlayerPrefs.GetFloat("lookYSensitivity");
-					float rotateXSpeed = 200.0F * PlayerPrefs.GetFloat("lookXSensitivity");
-			       pitch = Input.GetTouch (i).deltaPosition.y * rotateYSpeed * -1 * Time.deltaTime;
-			       yaw = Input.GetTouch (i).deltaPosition.x * rotateXSpeed * Time.deltaTime;
+				float rotateYSpeed = 200.0F * PlayerPrefs.GetFloat("lookYSensitivity");
+				float rotateXSpeed = 200.0F * PlayerPrefs.GetFloat("lookXSensitivity");
+			   pitch = Input.gyro.rotationRateUnbiased.y;
+			    yaw = Input.gyro.rotationRateUnbiased.x;
 
-			       if ((m_Camera.transform.eulerAngles.x < 400 && m_Camera.transform.eulerAngles.x + pitch > 280) ||
-				      (m_Camera.transform.eulerAngles.x > -1 && m_Camera.transform.eulerAngles.x + pitch < 60))
-			       {
-			           m_Camera.transform.localEulerAngles += new Vector3(pitch, m_Camera.transform.localEulerAngles.y,
-				       m_Camera.transform.localEulerAngles.z);
-			      }
-			      transform.localEulerAngles += new Vector3(0, yaw, 0);
-				   break; //Don't need to continue in this loop
-			   }
+				if ((m_Camera.transform.eulerAngles.x < 400 && m_Camera.transform.eulerAngles.x + pitch > 280) ||
+					(m_Camera.transform.eulerAngles.x > -1 && m_Camera.transform.eulerAngles.x + pitch < 60))
+				{
+					m_Camera.transform.localEulerAngles += new Vector3(pitch, m_Camera.transform.localEulerAngles.y,
+						m_Camera.transform.localEulerAngles.z);
+				}
+				transform.localEulerAngles += new Vector3(0, yaw, 0);
+			}
+			else
+			{
+			   int xSectionSize = Screen.width / 4;
+			   int ySectionSize = Screen.height / 4;
+
+			   //Find the first touch that is within range of the screen
+			   for (int i = 0; i < Input.touchCount; i++)
+			   {
+				  if (Input.GetTouch(i).position.y > ySectionSize && Input.GetTouch(i).position.x > xSectionSize)
+				  {
+			       
+					 float rotateYSpeed = 200.0F * PlayerPrefs.GetFloat("lookYSensitivity");
+					 float rotateXSpeed = 200.0F * PlayerPrefs.GetFloat("lookXSensitivity");
+			         pitch = Input.GetTouch (i).deltaPosition.y * rotateYSpeed * -1 * Time.deltaTime;
+			         yaw = Input.GetTouch (i).deltaPosition.x * rotateXSpeed * Time.deltaTime;
+
+			         if ((m_Camera.transform.eulerAngles.x < 400 && m_Camera.transform.eulerAngles.x + pitch > 280) ||
+				         (m_Camera.transform.eulerAngles.x > -1 && m_Camera.transform.eulerAngles.x + pitch < 60))
+			             {
+			                 m_Camera.transform.localEulerAngles += new Vector3(pitch, m_Camera.transform.localEulerAngles.y,
+				             m_Camera.transform.localEulerAngles.z);
+			             }
+			             transform.localEulerAngles += new Vector3(0, yaw, 0);
+				         break; //Don't need to continue in this loop
+			       }
+			    }
 			}
 #endif
         }

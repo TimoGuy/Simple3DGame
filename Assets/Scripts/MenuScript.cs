@@ -22,6 +22,8 @@ public class MenuScript : MonoBehaviour {
 	public GameObject mediumCheck;
 	public GameObject easyCheck;
 	public GameObject hardCheck;
+	public GameObject gyroCheck;
+	public GameObject mobileText;
 
 	// Use this for initialization
 	void Start () {
@@ -40,6 +42,10 @@ public class MenuScript : MonoBehaviour {
 
 		if (!PlayerPrefs.HasKey ("AILevel")) {
 			PlayerPrefs.SetInt ("AILevel", 0);
+		}
+
+		if (!PlayerPrefs.HasKey ("UseGyro")) {
+			PlayerPrefs.SetInt ("UseGyro", 0);
 		}
 		Slider tempSlider = xSlider.GetComponent<Slider>();
 		if (tempSlider != null)
@@ -66,6 +72,16 @@ public class MenuScript : MonoBehaviour {
 		else {
 			hardCheck.GetComponent<Toggle> ().isOn = true;
 		}
+		if (PlayerPrefs.GetInt ("UseGyro") == 1) {
+			gyroCheck.GetComponent<Toggle> ().isOn = true;
+		} else {
+			gyroCheck.GetComponent<Toggle> ().isOn = false;
+		}
+#if !MOBILE_INPUT
+		//Gyroscope option invisible for now
+		gyroCheck.SetActive(false);
+		mobileText.SetActive (false);
+#endif
 		PlayerPrefs.Save();
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
@@ -80,6 +96,7 @@ public class MenuScript : MonoBehaviour {
 		PlayerPrefs.SetFloat ("lookYSensitivity", 0.40F);
 		PlayerPrefs.SetFloat ("Volume", 0.50F);
 		PlayerPrefs.SetInt ("AILevel", 0);
+		PlayerPrefs.SetInt ("UseGyro", 0);
 		Slider tempSlider = xSlider.GetComponent<Slider>();
 		if (tempSlider != null)
 		{
@@ -171,6 +188,11 @@ public class MenuScript : MonoBehaviour {
 		else if (hardCheck.GetComponent<Toggle>().isOn)
 		{
 			PlayerPrefs.SetInt ("AILevel", 2);
+		}
+		if (gyroCheck.GetComponent<Toggle> ().isOn) {
+			PlayerPrefs.SetInt ("UseGyro", 1);
+		} else {
+			PlayerPrefs.SetInt ("UseGyro", 0);
 		}
 		PlayerPrefs.Save ();
 	}

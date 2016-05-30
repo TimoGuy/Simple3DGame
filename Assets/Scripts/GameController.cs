@@ -1,4 +1,4 @@
-﻿
+﻿using UnityEngine.UI;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.SceneManagement;
@@ -29,6 +29,7 @@ public class GameController : MonoBehaviour {
 	private UnityEngine.UI.Text temporaryText;
 	private UnityEngine.UI.Text weaponText;
 	private UnityEngine.UI.Text targetText;
+	private Slider health_bar;
 	private int gameTimeSeconds = 0;
 	private int gameTimeMinutes = 0;
 	private int gameTimeHours = 0;
@@ -65,6 +66,7 @@ public class GameController : MonoBehaviour {
 		temporaryText = GameObject.Find("TemporaryText").GetComponent<UnityEngine.UI.Text>();
 		weaponText = GameObject.Find("WeaponText").GetComponent<UnityEngine.UI.Text>();
 		targetText = GameObject.Find("TargetText").GetComponent<UnityEngine.UI.Text>();
+		health_bar = GameObject.Find("HealthSlider").GetComponent<Slider>();
 		gameTimeSeconds = SafeLoadPref("timeSec", 0);
 		gameTimeMinutes = SafeLoadPref("timeMin", 0);
 		gameTimeHours = SafeLoadPref("timeHour", 0);
@@ -359,7 +361,8 @@ public class GameController : MonoBehaviour {
 	public void UpdateHealth(int inputHealth)
 	{
 		health = inputHealth;
-		healthText.text = "Lives: " + lives.ToString () + "\nHealth: " + health.ToString () + "%";
+		health_bar.value = health;
+		healthText.text = "Lives: " + lives.ToString ();
 	}
 
 	/*****************************************************
@@ -436,7 +439,7 @@ public class GameController : MonoBehaviour {
 	public void UpdateLives(int inputLives)
 	{
 		lives = inputLives;
-		healthText.text = "Lives: " + lives.ToString () + "\nHealth: " + health.ToString () + "%";
+		healthText.text = "Lives: " + lives.ToString ();
 	}
 
 	/*****************************************************

@@ -96,8 +96,10 @@ public class GuidedRocket : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		look = Quaternion.LookRotation (target.transform.position - transform.position);
-		transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * 1.0F);
-		rb.velocity = transform.forward * 80;
+		if (target != null) {
+			look = Quaternion.LookRotation (target.transform.position - transform.position);
+			transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * 1.0F);
+			rb.velocity = transform.forward * 80;
+		}
 	}
 }
