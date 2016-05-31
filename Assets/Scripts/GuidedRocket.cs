@@ -98,7 +98,12 @@ public class GuidedRocket : MonoBehaviour {
 	void Update () {
 		if (target != null) {
 			look = Quaternion.LookRotation (target.transform.position - transform.position);
-			transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * 1.0F);
+			transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * 2.0F);
+			float dist = Vector3.Distance (target.transform.position, transform.position);
+			//Close enough, blow them up!
+			if (dist < 10) {
+				GetComponent ("Projectile").SendMessage ("SetDetonation", 0.0F);
+			}
 			rb.velocity = transform.forward * 80;
 		}
 	}

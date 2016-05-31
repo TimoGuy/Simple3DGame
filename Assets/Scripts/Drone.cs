@@ -166,9 +166,14 @@ public class Drone : MonoBehaviour {
 					if (dist < secondaryRange) {
 						GameObject blast_clone;
 						Vector3 position = transform.position;
+						Transform modified_target = target;
+						if (dist > 100) {
+							modified_target.position = target.position + target.forward * 10; //Shoot just ahead of the target
+						}
+						transform.LookAt (modified_target.position);
 						position = transform.position + transform.forward * 15;// + transform.right * 5;
 						//position = transform.position + transform.right * 5;
-						blast_clone = Instantiate (secondary, position, transform.rotation) as GameObject;
+							blast_clone = Instantiate (secondary, position, transform.rotation) as GameObject;
 						blast_clone.GetComponent<Rigidbody> ().velocity = transform.forward * 80;	
 					}
 				} else {

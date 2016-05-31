@@ -23,6 +23,10 @@ public class WeaponScript : MonoBehaviour {
 	private GameObject gameController;
 
 	void Start () {
+		ParticleSystem system = GetComponent<ParticleSystem>();
+		if (system != null) {
+			system.Pause ();
+		}
 		gameController = GameObject.FindGameObjectWithTag ("GameController");
 		nextFireTime = 0;
 		detonation_time = 5;
@@ -30,7 +34,7 @@ public class WeaponScript : MonoBehaviour {
 		Invoke ("DisplayWeaponText", 0.5F);
 		InvokeRepeating ("ScanTarget", Random.Range(0.5F, 1.0F), 0.5F);
 	}
-
+		
 	public void DeleteAmmoLevel()
 	{
 		string save_string = SceneManager.GetActiveScene ().name + "_" + weaponName + "_ammo";
@@ -51,69 +55,69 @@ public class WeaponScript : MonoBehaviour {
 			string text = "";
 			if (Physics.Raycast (ray, out hit, 9999)) {
 				if (hit.transform.CompareTag ("Crate")) {
-					text = "Ammo Crate\nDestroyable";
+					text = hit.distance.ToString() + "\nAmmo Crate\nDestroyable";
 				} else if (hit.transform.CompareTag ("AlliedDrone")) {
-					text = "Allied Drone\nDO NOT FIRE!";
+					text = hit.distance.ToString() + "\nAllied Drone\nDO NOT FIRE!";
 				}
 				else if (hit.transform.CompareTag ("AlliedPortal")) {
-					text = "Allied Portal\nDO NOT FIRE!";
+					text = hit.distance.ToString() + "\nAllied Portal\nDO NOT FIRE!";
 				}
 				else if (hit.transform.CompareTag ("AttackDrone")) {
-					text = "Attack Drone\nDestroy with\nExtreme Prejudice";
+					text = hit.distance.ToString() + "\nAttack Drone\nDestroy with\nExtreme Prejudice";
 				}
 				else if (hit.transform.CompareTag ("BattleCruiser")) {
-					text = "BattleCruiser\nWARNING\nUnit is heavily armed!";
+					text = hit.distance.ToString() + "\nBattleCruiser\nWARNING\nUnit is heavily armed!";
 				}
 				else if (hit.transform.CompareTag ("HeavyTurret")) {
-					text = "Heavy Turret\nWARNING\nDon't allow it to fire!";
+					text = hit.distance.ToString() + "\nHeavy Turret\nWARNING\nDon't allow it to fire!";
 				}
 				else if (hit.transform.CompareTag ("PointDefense")) {
-					text = "Point Defense\nWARNING\nRockets are ineffective\nAgainst target";
+					text = hit.distance.ToString() + "\nPoint Defense\nWARNING\nRockets are ineffective\nAgainst target";
 				}
 				else if (hit.transform.CompareTag ("Portal")) {
-					text = "Portal\nWARNING\nDestroy before more\nDrones come through!";
+					text = hit.distance.ToString() + "\nPortal\nWARNING\nDestroy before more\nDrones come through!";
 				}
 				//else if (hit.transform.CompareTag ("RocketTurret")) {
 				//	text = "Rocket Turret\nWARNING\nDestroy before it can fire!";
 				//}
 				else if (hit.transform.CompareTag ("AlliedTacticalDrone")) {
-					text = "Allied Tactical Drone\nDO NOT FIRE!";
+					text = hit.distance.ToString() + "\nAllied Tactical Drone\nDO NOT FIRE!";
 				}
 				else if (hit.transform.CompareTag ("TacticalDrone")) {
-					text = "Tactical Drone\nWARNING\nDestroy with\nExtreme Prejudice";
+					text = hit.distance.ToString() + "\nTactical Drone\nWARNING\nDestroy with\nExtreme Prejudice";
 				}
 				else if (hit.transform.CompareTag ("Turret")) {
-					text = "Turret\nWARNING\nDestroy with\nExtreme Prejudice";
+					text = hit.distance.ToString() + "\nTurret\nWARNING\nDestroy with\nExtreme Prejudice";
 				}
 				else if (hit.transform.CompareTag ("LevelMarker")) {
 					text = "Level Marker\nWalk through\nThis to save\tthe game";
 				}
 				else if (hit.transform.CompareTag ("DestroyableWall")) {
-					text = "Wall is destroyable";
+					text = hit.distance.ToString() + "\nWall is destroyable";
 				}
 				else if (hit.transform.CompareTag ("CaptureGunPickup")) {
-					text = "Capture Gun\nPick this up\nAnd you can\nCapture enemy drones";
+					text = hit.distance.ToString() + "\nCapture Gun\nPick this up\nAnd you can\nCapture enemy drones";
 				}
 				else if (hit.transform.CompareTag ("GrenadeLauncherPickup")) {
-					text = "Grenade Launcher\nPick this up\nto fire grenades\n";
+					text = hit.distance.ToString() + "\nGrenade Launcher\nPick this up\nto fire grenades\n";
 				}
 				else if (hit.transform.CompareTag ("HealthPack")) {
-					text = "Health Pack\nPick this up\nto gain more\nhealth";
+					text = hit.distance.ToString() + "\nHealth Pack\nPick this up\nto gain more\nhealth";
 				}
 				else if (hit.transform.CompareTag ("LaserGunPickup")) {
-					text = "Laser Gun\nPick this up\nto fire a\ndirected energy\nbeam at targets";
+					text = hit.distance.ToString() + "\nLaser Gun\nPick this up\nto fire a\ndirected energy\nbeam at targets";
 				}
 				else if (hit.transform.CompareTag ("MachineGunPickup")) {
-					text = "Machine Gun\nPick this up\nto fire bullets\nrapidly at targets";
+					text = hit.distance.ToString() + "\nMachine Gun\nPick this up\nto fire bullets\nrapidly at targets";
 				}
 				else if (hit.transform.CompareTag ("RocketLauncherPickup")) {
-					text = "Rocket Launcher\nPick this up\nto fire rockets\nat targets";
+					text = hit.distance.ToString() + "\nRocket Launcher\nPick this up\nto fire rockets\nat targets";
 				}
 				else if (hit.transform.CompareTag ("GuidedRocketLauncherPickup")) {
-					text = "Guided Rocket Launcher\nPick this up\nto fire guided rockets\nat targets";
+					text = hit.distance.ToString() + "\nGuided Rocket Launcher\nPick this up\nto fire guided rockets\nat targets";
 				}
 				else if (hit.transform.CompareTag ("RocketTurret")) {
-					text = "Rocket Turret\nWARNING\nLaunches guided rockets\nAt targets";
+					text = hit.distance.ToString() + "\nRocket Turret\nWARNING\nLaunches guided rockets\nAt targets";
 				}
 				gameController.SendMessage ("SetTargetText", text);
 			}
@@ -195,6 +199,11 @@ public class WeaponScript : MonoBehaviour {
 				}
 				DisplayWeaponText();
 				Vector3 position = transform.position;
+
+				ParticleSystem system = GetComponent<ParticleSystem>();
+				if (system != null) {
+					system.Emit(1);
+				}
 				blast_clone = Instantiate(bullet, position, transform.rotation) as GameObject;
 				blast_clone.GetComponent<Rigidbody>().velocity = transform.forward * shotSpeed;
 				nextFireTime = Time.time + maxRateOfFire; 
@@ -224,6 +233,10 @@ public class WeaponScript : MonoBehaviour {
 				}
 				DisplayWeaponText();
 				Vector3 position = transform.position;
+				ParticleSystem system = GetComponent<ParticleSystem>();
+				if (system != null) {
+					system.Emit(1);
+				}
 				blast_clone = Instantiate(bullet, position, transform.rotation) as GameObject;
 				blast_clone.GetComponent<Rigidbody>().velocity = transform.forward * shotSpeed;
 				if (ammoDetonates)

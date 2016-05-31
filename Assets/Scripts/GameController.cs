@@ -18,8 +18,9 @@ public class GameController : MonoBehaviour {
 	private float highScore = 0;
 	private float scoreValue = 0;
 	private int numDrones = 0;
+	private int numTactical = 0;
+	private int numAlliedTactical = 0;
 	public int team = 1;
-	//private int numDronesKilled = 0;
 	private int dronesCreated = 0;
 	private int alliedDronesCreated = 0;
 	private float droneLaunchTime = 20;
@@ -29,6 +30,8 @@ public class GameController : MonoBehaviour {
 	private UnityEngine.UI.Text temporaryText;
 	private UnityEngine.UI.Text weaponText;
 	private UnityEngine.UI.Text targetText;
+	private Image damageImage;
+	private Color flashColor = new Color (1f, 0f, 0f, 0.1f);
 	private Slider health_bar;
 	private int gameTimeSeconds = 0;
 	private int gameTimeMinutes = 0;
@@ -38,9 +41,12 @@ public class GameController : MonoBehaviour {
 	private int numAlliedDrones = 0;
 	private int health = 0;
 	private int lives = 0;
+	private int most_battlecruisers_passed = 0;
+	private int num_battlecruisers_passed = 0;
 	private int cruisers_launched = 0;
 	private float default_drone_launch_time = 30;
 	private int tactical_drone_launch_bound = 10;
+	private bool damaged = false;
 
 	// Use this for initialization
 	void Start () {
@@ -61,6 +67,7 @@ public class GameController : MonoBehaviour {
 			cruiserLaunchTime = 150;
 			tactical_drone_launch_bound = 5;
 		}
+		damageImage = GameObject.Find ("DamageImage").GetComponent<Image> ();
 		hudText = GameObject.Find("HudText").GetComponent<UnityEngine.UI.Text>();
 		healthText = GameObject.Find("HealthText").GetComponent<UnityEngine.UI.Text>();
 		temporaryText = GameObject.Find("TemporaryText").GetComponent<UnityEngine.UI.Text>();
@@ -74,11 +81,13 @@ public class GameController : MonoBehaviour {
 			
 		if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 			highScore = PlayerPrefs.GetFloat ("HighScore");
-			scoreValue = SafeLoadPref("scoreValue", 0.0F);//PlayerPrefs.GetFloat ("scoreValue");
-			dronesCreated = SafeLoadPref("dronesCreated", 0);//PlayerPrefs.GetInt ("dronesCreated", dronesCreated);
-			droneLaunchTime = SafeLoadPref("DroneLaunchTime", default_drone_launch_time);//PlayerPrefs.GetFloat ("DroneLaunchTime");
-			numDronesDestroyed = SafeLoadPref("dronesKilled", 0);
+			scoreValue = SafeLoadPref ("scoreValue", 0.0F);//PlayerPrefs.GetFloat ("scoreValue");
+			dronesCreated = SafeLoadPref ("dronesCreated", 0);//PlayerPrefs.GetInt ("dronesCreated", dronesCreated);
+			droneLaunchTime = SafeLoadPref ("DroneLaunchTime", default_drone_launch_time);//PlayerPrefs.GetFloat ("DroneLaunchTime");
+			numDronesDestroyed = SafeLoadPref ("dronesKilled", 0);
 			LoadGameObjects ();
+		} else {
+			most_battlecruisers_passed = SafeLoadPref ("mostCruisers", 0);
 		}
 
 		InvokeRepeating ("WinCheck", Random.Range (5.0F, 10.0F), 5.0F);
@@ -344,14 +353,17 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	private void DisplayStatusText()
 	{
-		hudText.text = "Ver: 1.1.44 (Alpha)";
+		hudText.text = "Ver: 1.1.46 (Alpha)";
 		hudText.text += "\nGame Time: " + PrintDoubleDigits(gameTimeHours) + ":" + PrintDoubleDigits(gameTimeMinutes) + ":" + PrintDoubleDigits(gameTimeSeconds);
-		hudText.text += "\nHigh Score: " + highScore.ToString ();
-		hudText.text += "\nScore: " + scoreValue.ToString ();
-		hudText.text += "\nDrones: " + numDrones.ToString ();
-		hudText.text += "\nDestroyed: " + numDronesDestroyed.ToString ();
+		hudText.text += "\nScore: " + scoreValue.ToString () + " (High: " + highScore.ToString () + ")";
+		if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
+			hudText.text += "\nCruisers Passed: " + num_battlecruisers_passed.ToString ();
+			hudText.text += "\nMost Cruisers Passed: " + most_battlecruisers_passed.ToString ();
+		}
+		hudText.text += "\nDrones: " + numDrones.ToString () + "/Destroyed: " + numDronesDestroyed.ToString ();
 		hudText.text += "\nPortals: " + numPortholes.ToString ();
 		hudText.text += "\nAllies: " + numAlliedDrones.ToString ();
+
 	}
 
 	/*****************************************************
@@ -360,6 +372,9 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	public void UpdateHealth(int inputHealth)
 	{
+		if (inputHealth < health) {
+			damaged = true;
+		}
 		health = inputHealth;
 		health_bar.value = health;
 		healthText.text = "Lives: " + lives.ToString ();
@@ -511,6 +526,13 @@ public class GameController : MonoBehaviour {
 					cruiser.SendMessage ("TargetPlayer");
 				} else {
 					cruisers_launched++;
+					num_battlecruisers_passed++;
+					if (num_battlecruisers_passed > most_battlecruisers_passed) {
+						most_battlecruisers_passed = num_battlecruisers_passed;
+						PlayerPrefs.SetInt ("mostCruisers" + "_" + SceneManager.GetActiveScene ().name, most_battlecruisers_passed);
+						PlayerPrefs.Save ();
+					}
+
 				}
 
 				Invoke ("LaunchCruiser", cruiserLaunchTime);
@@ -535,4 +557,18 @@ public class GameController : MonoBehaviour {
 		PlayerPrefs.SetFloat ("scoreValue" + "_" + SceneManager.GetActiveScene ().name, scoreValue);
 		DisplayStatusText ();
 	}
+
+	void Update()
+	{
+		if (damaged)
+		{
+			damageImage.color = flashColor;
+		}
+		else
+		{
+			damageImage.color = Color.Lerp(damageImage.color, Color.clear, 8f * Time.deltaTime);
+		}
+		damaged = false;
+	}
+
 }

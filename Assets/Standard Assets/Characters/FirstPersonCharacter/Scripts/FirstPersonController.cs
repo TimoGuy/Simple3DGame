@@ -15,6 +15,11 @@
 * health bar. This bar indicates how much health the user has. Fixed an issue on exit
 * wher the guided rocket is attempting to access the target game object. Added
 * the option to rotate the view using the accelerometor.
+* Update: 5/31/2016, Reved to version 1.1.46 (Alpha 12), Added target distance to active
+* targeting. Modifed the tactical drone to shoot a little ahead of the target, modified the
+* guided rocket to explode once it is close to a target. Increased guided rocket turn radius. Added code that
+* flashes the screen red when the player is hit. Added smoke effect to the rifle. Modified the switch weapon
+* button to be smaller and just say "Weapon"
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
