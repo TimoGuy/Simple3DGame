@@ -16,11 +16,11 @@ public class BattleCruiser : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		controller = GameObject.FindObjectOfType<UnityStandardAssets.Characters.FirstPerson.FirstPersonController> ();
-		if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
-			GameObject[] destinations = GameObject.FindGameObjectsWithTag ("FlightPoint");
+		GameObject[] destinations = GameObject.FindGameObjectsWithTag ("FlightPoint");
+		if (destinations.Length > 0) {
 			int destination = Random.Range (0, destinations.Length - 1);
 			target = destinations [destination].transform;
-			InvokeRepeating ("DropCrate", Random.Range (5.00F, 10.0F), 1.5F); 
+			InvokeRepeating ("DropCrate", Random.Range (5.00F, 10.0F), 5.0F); 
 
 		} else {
 			target = controller.transform;
@@ -30,17 +30,17 @@ public class BattleCruiser : MonoBehaviour {
 		Invoke ("StartDroneWave", Random.Range (1.00F, 5.0F)); 
 	}
 
-	public void SetMode(int mode)
+	public void SetSpeed(int in_Speed)
 	{
-		if (mode == 1) { //Supply mode
-			speed = 25;
-		}
+		speed = in_Speed;
 	}
 	public void TargetPlayer()
 	{
-		target = controller.transform;
-		standoffPosition = target.position;
-		standoffPosition.y = transform.position.y;
+		if (controller != null) {
+			target = controller.transform;
+			standoffPosition = target.position;
+			standoffPosition.y = transform.position.y;
+		}
 	}
 
 

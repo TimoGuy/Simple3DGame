@@ -14,13 +14,13 @@ public class GameController : MonoBehaviour {
 	public GameObject AlliedDroneModel;
 	public GameObject TacticalDroneModel;
 	public GameObject AlliedTacticalDroneModel;
+	public GameObject GameOverOverlay;
+
+	private int battlecruiser_speed = 25;
 	private bool endGuyBuilt = false;
+	private int num_cruisers_in_wave = 0;
 	private float highScore = 0;
 	private float scoreValue = 0;
-	private int numDrones = 0;
-	private int numTactical = 0;
-	private int numAlliedTactical = 0;
-	public int team = 1;
 	private int dronesCreated = 0;
 	private int alliedDronesCreated = 0;
 	private float droneLaunchTime = 20;
@@ -37,16 +37,15 @@ public class GameController : MonoBehaviour {
 	private int gameTimeMinutes = 0;
 	private int gameTimeHours = 0;
 	private int numDronesDestroyed = 0;
-	private int numPortholes = 0;
-	private int numAlliedDrones = 0;
 	private int health = 0;
 	private int lives = 0;
 	private int most_battlecruisers_passed = 0;
-	private int num_battlecruisers_passed = 0;
 	private int cruisers_launched = 0;
 	private float default_drone_launch_time = 30;
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
+
+	private static string version = "1.1.47 (Alpha)";
 
 	// Use this for initialization
 	void Start () {
@@ -78,7 +77,10 @@ public class GameController : MonoBehaviour {
 		gameTimeMinutes = SafeLoadPref("timeMin", 0);
 		gameTimeHours = SafeLoadPref("timeHour", 0);
 		InvokeRepeating ("GameTicker", Random.Range(0.5F, 1.0F), 1.0F);
-			
+		if (SceneManager.GetActiveScene().name.Equals ("CaptureMode")) {
+			Invoke("LaunchCruiser", Random.Range(10.0F, 20.0F)); //Only launch battle cruisers in survival mode
+			default_drone_launch_time = 25;
+		}
 		if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 			highScore = PlayerPrefs.GetFloat ("HighScore");
 			scoreValue = SafeLoadPref ("scoreValue", 0.0F);//PlayerPrefs.GetFloat ("scoreValue");
@@ -88,13 +90,14 @@ public class GameController : MonoBehaviour {
 			LoadGameObjects ();
 		} else {
 			most_battlecruisers_passed = SafeLoadPref ("mostCruisers", 0);
+			Invoke("LaunchCruiser", Random.Range(20.0F, 60.0F)); //Only launch battle cruisers in survival mode
 		}
 
 		InvokeRepeating ("WinCheck", Random.Range (5.0F, 10.0F), 5.0F);
 		Invoke ("LaunchDrone", Random.Range (5.00F, 10.0F));
 		Invoke ("LaunchAlliedDrone", Random.Range (1.0F, 10.0F));
-		Invoke ("DisplayStatusText", 0.5F);
-		Invoke("LaunchCruiser", Random.Range(20.0F, 60.0F));
+		Invoke ("DisplayStatusText", 0.3F);
+
 	}
 
 	/************************************************ 
@@ -166,9 +169,7 @@ public class GameController : MonoBehaviour {
 		PlayerPrefs.DeleteKey ("timeSec"+ "_" + SceneManager.GetActiveScene ().name);
 		PlayerPrefs.DeleteKey ("timeMin"+ "_" + SceneManager.GetActiveScene ().name);
 		PlayerPrefs.DeleteKey ("timeHour"+ "_" + SceneManager.GetActiveScene ().name);
-		//if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
-		PlayerPrefs.Save (); //Done't save prefs in survival mode
-		//}
+		PlayerPrefs.Save ();
 	}
 
 	/*****************************************************
@@ -278,7 +279,6 @@ public class GameController : MonoBehaviour {
 		SaveGameObject ("Turret");
 		SaveGameObject ("TacticalDrone");
 		SaveGameObject ("AlliedTacticalDrone");
-		//PlayerPrefs.Save ();
 	}
 
 	/*****************************************************
@@ -321,9 +321,6 @@ public class GameController : MonoBehaviour {
 	private void GameTicker()
 	{
 		gameTimeSeconds++;
-		numDrones = GameObject.FindGameObjectsWithTag ("AttackDrone").Length;
-		numPortholes = GameObject.FindGameObjectsWithTag ("Portal").Length;
-		numAlliedDrones = GameObject.FindGameObjectsWithTag ("AlliedDrone").Length;
 		if (gameTimeSeconds == 60) {
 			gameTimeSeconds = 0;
 			gameTimeMinutes++;
@@ -353,17 +350,19 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	private void DisplayStatusText()
 	{
-		hudText.text = "Ver: 1.1.46 (Alpha)";
-		hudText.text += "\nGame Time: " + PrintDoubleDigits(gameTimeHours) + ":" + PrintDoubleDigits(gameTimeMinutes) + ":" + PrintDoubleDigits(gameTimeSeconds);
+		int numDrones = GameObject.FindGameObjectsWithTag ("AttackDrone").Length;
+		int numPortholes = GameObject.FindGameObjectsWithTag ("Portal").Length;
+		int numTacticalDrones = GameObject.FindGameObjectsWithTag ("TacticalDrone").Length;
+		hudText.text = "Ver: " + version;
+		hudText.text += "\nTime: " + PrintDoubleDigits(gameTimeHours) + ":" + PrintDoubleDigits(gameTimeMinutes) + ":" + PrintDoubleDigits(gameTimeSeconds);
 		hudText.text += "\nScore: " + scoreValue.ToString () + " (High: " + highScore.ToString () + ")";
 		if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
-			hudText.text += "\nCruisers Passed: " + num_battlecruisers_passed.ToString ();
-			hudText.text += "\nMost Cruisers Passed: " + most_battlecruisers_passed.ToString ();
+			hudText.text += "\nCruisers Launched: " + cruisers_launched.ToString () + " Most: " + most_battlecruisers_passed.ToString();
 		}
-		hudText.text += "\nDrones: " + numDrones.ToString () + "/Destroyed: " + numDronesDestroyed.ToString ();
+		hudText.text += "\nDrones: " + numDrones.ToString ();
+		hudText.text += "\nTactical: " + numTacticalDrones.ToString();
+		hudText.text += "\nDestroyed: " + numDronesDestroyed.ToString ();
 		hudText.text += "\nPortals: " + numPortholes.ToString ();
-		hudText.text += "\nAllies: " + numAlliedDrones.ToString ();
-
 	}
 
 	/*****************************************************
@@ -432,7 +431,6 @@ public class GameController : MonoBehaviour {
 			PlayerPrefs.SetInt ("timeSec" + "_" + SceneManager.GetActiveScene ().name, gameTimeSeconds);
 			PlayerPrefs.SetInt ("timeHour" + "_" + SceneManager.GetActiveScene ().name, gameTimeHours);
 			SaveGameObject ("AttackDrone");
-			//PlayerPrefs.Save ();
 		}
 	}
 
@@ -444,6 +442,11 @@ public class GameController : MonoBehaviour {
 	public void DroneDestroyed()
 	{
 		numDronesDestroyed++;
+	}
+
+	public void GameOver()
+	{
+		GameOverOverlay.SetActive (true);
 	}
 
 	/*****************************************************
@@ -486,7 +489,7 @@ public class GameController : MonoBehaviour {
 	{
 		GameObject[] launchers = GameObject.FindGameObjectsWithTag ("DroneLauncher");
 		int randLauncher = Random.Range (0, launchers.Length - 1);
-		if (launchers.Length > 0 && numDrones < 300) {
+		if (launchers.Length > 0) {
 			//Time to launch a tactical drone
 			if ((dronesCreated % tactical_drone_launch_bound) == 0 && dronesCreated != 0) {
 				Instantiate (TacticalDroneModel, launchers [randLauncher].transform.position, launchers [randLauncher].transform.rotation);
@@ -514,30 +517,33 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	private void LaunchCruiser()
 	{
-		if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
-			GameObject[] destinations = GameObject.FindGameObjectsWithTag ("SpawnPoint");
-			Vector3 spawnPoint = new Vector3 (Random.Range(-100, 150), Random.Range(35, 60), Random.Range(800, 1000));
-			if (destinations.Length > 0) {
-				int destination = Random.Range (0, destinations.Length - 1); //Randomize the start/end points
-					GameObject cruiser = Instantiate (battleCruiserObject, spawnPoint, destinations [destination].transform.rotation) as GameObject;
-				cruiser.SendMessage ("SetMode", 1);
-				if (cruisers_launched == 2) {
-					cruisers_launched = 0;
-					cruiser.SendMessage ("TargetPlayer");
-				} else {
-					cruisers_launched++;
-					num_battlecruisers_passed++;
-					if (num_battlecruisers_passed > most_battlecruisers_passed) {
-						most_battlecruisers_passed = num_battlecruisers_passed;
-						PlayerPrefs.SetInt ("mostCruisers" + "_" + SceneManager.GetActiveScene ().name, most_battlecruisers_passed);
-						PlayerPrefs.Save ();
-					}
-
-				}
-
+		GameObject[] destinations = GameObject.FindGameObjectsWithTag ("SpawnPoint");
+		Vector3 spawnPoint = new Vector3 (Random.Range(-100, 150), Random.Range(35, 60), Random.Range(800, 1000));
+		if (destinations.Length > 0) {
+			int destination = Random.Range (0, destinations.Length - 1); //Randomize the start/end points
+			GameObject cruiser = Instantiate (battleCruiserObject, spawnPoint, destinations [destination].transform.rotation) as GameObject;
+			cruiser.SendMessage ("SetSpeed", battlecruiser_speed);
+			if (battlecruiser_speed > 7) {
+				battlecruiser_speed--;
+			}
+			if ((cruisers_launched % 3) == 0 && cruisers_launched > 0) {
+				 cruiser.SendMessage ("TargetPlayer");
+			}
+			if (cruisers_launched > most_battlecruisers_passed) {
+				most_battlecruisers_passed = cruisers_launched;
+				PlayerPrefs.SetInt ("mostCruisers" + "_" + SceneManager.GetActiveScene ().name, most_battlecruisers_passed);
+				PlayerPrefs.Save ();
+			}
+			cruisers_launched++;
+			//Start launching waves of two cruisers
+			if (cruisers_launched > 5 && num_cruisers_in_wave < 2 || cruisers_launched > 12 && num_cruisers_in_wave < 4) {
+				Invoke ("LaunchCruiser", 1.0F);
+				num_cruisers_in_wave++;
+			} else {
 				Invoke ("LaunchCruiser", cruiserLaunchTime);
 				if (cruiserLaunchTime > 40) {
 					cruiserLaunchTime -= 10;
+					num_cruisers_in_wave = 0;
 				}
 			}
 		}
@@ -555,7 +561,6 @@ public class GameController : MonoBehaviour {
 			PlayerPrefs.SetFloat ("HighScore", highScore);
 		}
 		PlayerPrefs.SetFloat ("scoreValue" + "_" + SceneManager.GetActiveScene ().name, scoreValue);
-		DisplayStatusText ();
 	}
 
 	void Update()

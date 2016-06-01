@@ -74,8 +74,10 @@ public class MenuScript : MonoBehaviour {
 		}
 		if (PlayerPrefs.GetInt ("UseGyro") == 1) {
 			gyroCheck.GetComponent<Toggle> ().isOn = true;
+			Input.gyro.enabled = true;
 		} else {
 			gyroCheck.GetComponent<Toggle> ().isOn = false;
+			Input.gyro.enabled = false;
 		}
 #if !MOBILE_INPUT
 		//Gyroscope option invisible for now
@@ -118,17 +120,19 @@ public class MenuScript : MonoBehaviour {
 
 	public void StartGameHandler()
 	{
-		PlayerPrefs.SetInt ("isSurvival", 0);
-		PlayerPrefs.Save ();
 		SceneManager.LoadScene ("MiniGame");
 	}
 
 	public void SurvivalModeHandler()
 	{
-		PlayerPrefs.SetInt ("isSurvival", 1);
-		PlayerPrefs.Save ();
 		SceneManager.LoadScene ("SurvivalMode");
 	}
+
+	public void CaptureModeHandler()
+	{
+		SceneManager.LoadScene ("CaptureMode");
+	}
+
 	bool otherChange = false;
 	public void EasyCheckboxHandler()
 	{
@@ -191,8 +195,10 @@ public class MenuScript : MonoBehaviour {
 		}
 		if (gyroCheck.GetComponent<Toggle> ().isOn) {
 			PlayerPrefs.SetInt ("UseGyro", 1);
+			Input.gyro.enabled = true;
 		} else {
 			PlayerPrefs.SetInt ("UseGyro", 0);
+			Input.gyro.enabled = false;
 		}
 		PlayerPrefs.Save ();
 	}

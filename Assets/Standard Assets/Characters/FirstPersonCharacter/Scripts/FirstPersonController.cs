@@ -20,6 +20,20 @@
 * guided rocket to explode once it is close to a target. Increased guided rocket turn radius. Added code that
 * flashes the screen red when the player is hit. Added smoke effect to the rifle. Modified the switch weapon
 * button to be smaller and just say "Weapon"
+* Update: 6/1/2016, Reved to version 1.1.47 (Alpha 12), Preformed a minor refactor of the GameController
+* added tactical drone counts to the screen. Fixed an issue where allies add to the players score when
+* destroyed. Fixed another issue where tactical drones were not being counted as destroyed. Decreased
+* the crate drop rate of the battle cruiser. Fixed some issues with how and when battle cruisers are launched
+* and how the counts are handled for Survival Mode. Cruiser speed decreases as more cruisers are launched. This makes the game
+* more difficult as it becomes more difficult to fight off the drones they produce. No longer updating the screen text
+* when points are scored (as the tick timer updates this for us). Added code to launch cruisers in waves after
+* a certain number of them have passed by. Only incrementing the score if the objects health is at 0; this fixes
+* an issue where the player score increments when a battlecruiser passes the screen. Added the game over screen overlay
+* this will now display "Game Over" when the player is defeated. Fixed an issue in the projectile script where projectiles
+* were Instantiating explosions when destroyed at the end of the game. Optimized this script so objects that detonate
+* only make an explosion when they call their detonate function. Modified the menu script to enable or disable the
+* gyroscope depeninding on the setting. Added a few new game elements to capture mode to make it operational, capture mode
+* has now been added to the main menu.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -90,6 +104,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		private GameObject captureGun;
 		private GameObject captureGunFirePoint;
+		private bool gameOver = false;
 		public int team = 1;
 
 		private GameObject gameController;
@@ -320,7 +335,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				{
 					lives--;
 					if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
-						SceneManager.LoadScene ("MainMenu");
+						//SceneManager.LoadScene ("MainMenu");
+						gameController.SendMessage ("GameOver");
+						SwitchWeapons (-1, false); //deactivate weapons
+						gameOver = true;
+						Invoke ("LoadMainMenu", 5.0F);
 
 					}
 					else if (lives > 0)
@@ -335,15 +354,24 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					else
 					{
 						gameController.SendMessage ("SetDefaults");
+						gameController.SendMessage ("GameOver");
+						SwitchWeapons (-1, false); //deactivate weapons
+						Invoke ("LoadMainMenu", 5.0F);
+						gameOver = true;
 						ClearWeaponSaves ();
 						ClearFirstPersonController ();
 						PlayerPrefs.Save ();
-						SceneManager.LoadScene ("MiniGame");
+						//SceneManager.LoadScene ("MiniGame");
 					}
 				}
 			}
 			gameController.SendMessage ("UpdateHealth", health);
 			gameController.SendMessage ("UpdateLives", lives); 
+		}
+
+		private void LoadMainMenu()
+		{
+			SceneManager.LoadScene ("MainMenu");
 		}
 
 		/********************************************
@@ -410,12 +438,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
         // Update is called once per frame
         private void Update()
         {
-			if (Input.GetKeyDown ("b") || CrossPlatformInputManager.GetButtonDown("Fire2")) {
+			if ((Input.GetKeyDown ("b") || CrossPlatformInputManager.GetButtonDown("Fire2")) && gameOver == false) {
 				NextWeapon ();
 				SwitchWeapons(curWeapon, true);
 				//DisplayStatusText();
 			}
-            RotateView();
+			if (gameOver == false) {
+				RotateView ();
+			}
             // the jump state needs to read here to make sure it is not missed
             if (!m_Jump)
             {

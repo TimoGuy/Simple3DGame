@@ -14,7 +14,6 @@ public class GuidedRocket : MonoBehaviour {
 		Invoke ("detonate", 60.0F);
 		FindTarget ();
 		InvokeRepeating ("FindTarget", 5.0F, 5.0F);
-		//InvokeRepeating ("AimAtTarget", Random.Range (0.5F, 0.6F), 0.3F);
 	}
     
 	private void detonate()
@@ -57,7 +56,6 @@ public class GuidedRocket : MonoBehaviour {
 			//Cast a ray and see if a target is right in front
 			Ray ray = new Ray (transform.position, transform.forward);
 			RaycastHit hit;
-			string text = "";
 			if (Physics.Raycast (ray, out hit, 9999))
 			{
 				if (hit.transform.CompareTag ("AttackDrone") || hit.transform.CompareTag ("BattleCruiser") ||
@@ -77,7 +75,6 @@ public class GuidedRocket : MonoBehaviour {
 		} else {
 			Ray ray = new Ray (transform.position, transform.forward);
 			RaycastHit hit;
-			string text = "";
 			if (Physics.Raycast (ray, out hit, 9999))
 			{
 				if (hit.transform.CompareTag ("Player") || hit.transform.CompareTag ("AlliedDrone") ||

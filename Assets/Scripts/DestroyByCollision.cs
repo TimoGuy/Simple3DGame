@@ -158,9 +158,12 @@ public class DestroyByCollision : MonoBehaviour {
 			if (controller == null) {
 				return;
 			}
-			gameController.SendMessage ("AddToScore", ScoreValue);
+			//Allied units don't add score
+			if (!CompareTag ("AlliedDrone") && !CompareTag ("AlliedTacticalDrone") && !CompareTag("AlliedPortal") && health == 0) {
+				gameController.SendMessage ("AddToScore", ScoreValue);
+			}
 			//Increase player health on death
-			if (CompareTag("AttackDrone")) {
+			if (CompareTag("AttackDrone") || CompareTag("TacticalDrone")) {
 				gameController.SendMessage ("DroneDestroyed");
 			}
 			if (IncreaseHealthOnDeath)

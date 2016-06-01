@@ -5,9 +5,7 @@ public class Projectile : MonoBehaviour {
 
 	public GameObject explosion;
 	public bool explodeOnContact;
-	private float detonation_time;
 	private bool explode;
-	private bool explodeOnDestroy;
 	public int health;
 	void Start() {
 		explode = false;
@@ -19,15 +17,19 @@ public class Projectile : MonoBehaviour {
 		if (detonation < 0) {
 			explodeOnContact=true;
 		} else {
-			detonation_time = detonation;
 			explodeOnContact=false;
-			explodeOnDestroy = true;
-			Destroy (gameObject, detonation_time);
+			Invoke ("Detonate", detonation);
 		}
 	}
 
+	void Detonate()
+	{
+		explode = true;
+		Destroy (gameObject);
+	}
+
 	void OnDestroy() {
-		if (explode || explodeOnDestroy) {
+		if (explode) {
 			Rigidbody rb = GetComponent<Rigidbody> ();
 			Instantiate (explosion, rb.position, rb.rotation);
 		}
