@@ -26,7 +26,6 @@ public class GameController : MonoBehaviour {
 	private float droneLaunchTime = 20;
 	private float cruiserLaunchTime = 300.0F;
 	private UnityEngine.UI.Text hudText;
-	private UnityEngine.UI.Text healthText;
 	private UnityEngine.UI.Text temporaryText;
 	private UnityEngine.UI.Text weaponText;
 	private UnityEngine.UI.Text targetText;
@@ -38,14 +37,13 @@ public class GameController : MonoBehaviour {
 	private int gameTimeHours = 0;
 	private int numDronesDestroyed = 0;
 	private int health = 0;
-	private int lives = 0;
 	private int most_battlecruisers_passed = 0;
 	private int cruisers_launched = 0;
 	private float default_drone_launch_time = 30;
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
 
-	private static string version = "1.1.47 (Alpha)";
+	private static string version = "1.1.48 (Alpha)";
 
 	// Use this for initialization
 	void Start () {
@@ -68,7 +66,6 @@ public class GameController : MonoBehaviour {
 		}
 		damageImage = GameObject.Find ("DamageImage").GetComponent<Image> ();
 		hudText = GameObject.Find("HudText").GetComponent<UnityEngine.UI.Text>();
-		healthText = GameObject.Find("HealthText").GetComponent<UnityEngine.UI.Text>();
 		temporaryText = GameObject.Find("TemporaryText").GetComponent<UnityEngine.UI.Text>();
 		weaponText = GameObject.Find("WeaponText").GetComponent<UnityEngine.UI.Text>();
 		targetText = GameObject.Find("TargetText").GetComponent<UnityEngine.UI.Text>();
@@ -98,6 +95,30 @@ public class GameController : MonoBehaviour {
 		Invoke ("LaunchAlliedDrone", Random.Range (1.0F, 10.0F));
 		Invoke ("DisplayStatusText", 0.3F);
 
+	}
+
+	public void SetLifeImages(int lives)
+	{
+		if (lives < 5)
+		{
+			GameObject.Find ("Life5").SetActive (false);
+		}
+		if (lives < 4)
+		{
+			GameObject.Find ("Life4").SetActive (false);
+		}
+		if (lives < 3)
+		{
+			GameObject.Find ("Life3").SetActive (false);
+		}
+		if (lives < 2)
+		{
+			GameObject.Find ("Life2").SetActive (false);
+		}
+		if (lives < 1)
+		{
+			GameObject.Find ("Life1").SetActive (false);
+		}
 	}
 
 	/************************************************ 
@@ -376,7 +397,7 @@ public class GameController : MonoBehaviour {
 		}
 		health = inputHealth;
 		health_bar.value = health;
-		healthText.text = "Lives: " + lives.ToString ();
+		//healthText.text = "Lives: " + lives.ToString ();
 	}
 
 	/*****************************************************
@@ -456,8 +477,9 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	public void UpdateLives(int inputLives)
 	{
-		lives = inputLives;
-		healthText.text = "Lives: " + lives.ToString ();
+		//lives = inputLives;
+		SetLifeImages(inputLives);
+		//healthText.text = "Lives: " + lives.ToString ();
 	}
 
 	/*****************************************************

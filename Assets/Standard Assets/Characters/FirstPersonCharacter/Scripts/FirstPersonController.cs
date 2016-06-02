@@ -34,6 +34,11 @@
 * only make an explosion when they call their detonate function. Modified the menu script to enable or disable the
 * gyroscope depeninding on the setting. Added a few new game elements to capture mode to make it operational, capture mode
 * has now been added to the main menu.
+* Update: 6/2/2016, Reved to version 1.1.48, Reduced the size of the crate objects. Removed crates from the mini game to improve speed.
+* modified the look angle for Android to prevent it from getting stuck. Removed a number of launch tubes and shooting pillars
+* from the main game to improve performance. Removed life count and replaced it with allied drones. Increased the capture gun ROF.
+* removed a lot of launch tubes from the main game. Fixed an issue where objects and drones were jumping around. Fixed an issue where
+* lives were being updated even when they didnt need to be.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -112,6 +117,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		private int curWeapon = 0;
 		private int health = 100;
 		private int lives = 1;
+		private bool lives_updated = false;
 		private float lastSaveTime;
 		private int[] currentWeapons;
 #if MOBILE_INPUT
@@ -366,7 +372,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				}
 			}
 			gameController.SendMessage ("UpdateHealth", health);
-			gameController.SendMessage ("UpdateLives", lives); 
+			if (!lives_updated) {
+				lives_updated = true;
+				gameController.SendMessage ("UpdateLives", lives); 
+			}
 		}
 
 		private void LoadMainMenu()
@@ -594,6 +603,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // keep track of whether or not the character is walking or running
             m_IsWalking = !Input.GetKey(KeyCode.LeftShift);
 #endif
+			//Debug.Log (horizontal);
+			//Debug.Log (vertical);
             // set the desired speed to be walking or running
             speed = m_IsWalking ? m_WalkSpeed : m_RunSpeed;
             m_Input = new Vector2(horizontal, vertical);
@@ -628,7 +639,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			   pitch = Input.gyro.rotationRateUnbiased.y;
 			    yaw = Input.gyro.rotationRateUnbiased.x;
 
-				if ((m_Camera.transform.eulerAngles.x < 400 && m_Camera.transform.eulerAngles.x + pitch > 280) ||
+				if ((m_Camera.transform.eulerAngles.x < 400 && m_Camera.transform.eulerAngles.x + pitch > 290) ||
 					(m_Camera.transform.eulerAngles.x > -1 && m_Camera.transform.eulerAngles.x + pitch < 60))
 				{
 					m_Camera.transform.localEulerAngles += new Vector3(pitch, m_Camera.transform.localEulerAngles.y,
