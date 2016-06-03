@@ -43,7 +43,7 @@ public class GameController : MonoBehaviour {
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
 
-	private static string version = "1.1.48 (Alpha)";
+	private static string version = "1.1.49 (Alpha)";
 
 	// Use this for initialization
 	void Start () {
@@ -250,21 +250,6 @@ public class GameController : MonoBehaviour {
 					count++;
 				}
 			}
-			//Debug.Log ("Loaded: " + count.ToString () + " GameObjects with tag: " + tag);
-		} else {
-			//Save all game objects with that tag to the pref file for safe keeping.
-			GameObject[] currentObjects = GameObject.FindGameObjectsWithTag (tag);
-			objectString = "";
-			foreach (GameObject portal in currentObjects) {
-				Vector3 dronePosition = portal.transform.position;
-				Vector3 portholeRotation = portal.transform.eulerAngles;
-				objectString += dronePosition.x.ToString () + "," + dronePosition.y.ToString () + "," + dronePosition.z.ToString () + ",";
-				objectString += portholeRotation.x.ToString () + "," + portholeRotation.y.ToString () + "," + portholeRotation.z.ToString () + ":";
-				count++;
-			}
-			//Debug.Log ("Saved: " + count.ToString () + " GameObjects with tag; " + tag);
-			PlayerPrefs.SetString (tag + "_" + SceneManager.GetActiveScene ().name, objectString);
-			PlayerPrefs.Save ();
 		}
 	}
 
@@ -317,6 +302,7 @@ public class GameController : MonoBehaviour {
 		else if (GameObject.FindGameObjectsWithTag ("BattleCruiser").Length <= 0 && endGuyBuilt == true)
 		{
 			SetTempText("Victory!");
+			GameObject.FindGameObjectWithTag ("Player").SendMessage ("ClearFirstPersonController");
 			Invoke ("EndGame", 3.0F);
 		}
 	}

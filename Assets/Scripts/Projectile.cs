@@ -45,7 +45,15 @@ public class Projectile : MonoBehaviour {
 		if (explodeOnContact) {
 			explode = true;
 			Destroy (gameObject);
+		} else if (other.gameObject.CompareTag ("AttackDrone") || other.gameObject.CompareTag ("BattleCruiser") ||
+		         other.gameObject.CompareTag ("Portal") || other.gameObject.CompareTag ("HeavyTurret") ||
+		         other.gameObject.CompareTag ("Turret") || other.gameObject.CompareTag ("TacticalDrone") ||
+		         other.gameObject.CompareTag ("AlliedTacticalDrone") || other.gameObject.CompareTag ("AlliedDrone") ||
+		         other.gameObject.CompareTag ("Crate") || other.gameObject.CompareTag ("DestroyableWall")) {
+			explode = true;
+			Destroy (gameObject);
 		}
+
 	}
 
 	public void HitByPointDefense()

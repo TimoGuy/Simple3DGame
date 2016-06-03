@@ -6,7 +6,7 @@ public class Collection : MonoBehaviour {
 	public GameObject collectableBox;
 	// Use this for initialization
 	void Start () {
-		Invoke ("ObjectLifeEnd", Random.Range (10.0F, 20.0F));
+		Invoke ("ObjectLifeEnd", Random.Range (20.0F, 30.0F));
 	}
 
 	void ObjectLifeEnd()
@@ -26,7 +26,7 @@ public class Collection : MonoBehaviour {
 	void OnCollisionEnter(Collision other)
 	{
 		if (other.gameObject.CompareTag("Ground")) {
-			Invoke ("StopObject", Random.Range (4.0F, 6.0F));
+			Invoke ("StopObject", Random.Range (2.0F, 3.0F));
 		}
 	}
 }

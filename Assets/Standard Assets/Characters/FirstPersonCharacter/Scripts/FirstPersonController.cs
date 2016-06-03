@@ -39,6 +39,12 @@
 * from the main game to improve performance. Removed life count and replaced it with allied drones. Increased the capture gun ROF.
 * removed a lot of launch tubes from the main game. Fixed an issue where objects and drones were jumping around. Fixed an issue where
 * lives were being updated even when they didnt need to be.
+* Update: 6/3/2016, Reved to version 1.1.49, Removed the gyroscope option from the game. Fixed an issue where the game does not reset
+* the fps controller settings when the victory is achieved. Save point now increases player health. Increased the width and boldness
+* of temporary text. Adjusted the masses of each bullet to make it more realistic. Removed code that saves game objects in the load
+* game object function. Game Objects can only be saved when a save point is passed. (this may be why game objects were doubled). Reduced
+* the number of crates that get re-spawned when a crate is destroyed. Added the new fall again script. This is to handle objects that get
+* stuck in the air. Fixed an issue where grenades were not exploding. 
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -632,23 +638,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			}
 
 #else
-			if (PlayerPrefs.GetInt("UseGyro") == 1)// && Input.gyro.enabled)
-			{
-				float rotateYSpeed = 200.0F * PlayerPrefs.GetFloat("lookYSensitivity");
-				float rotateXSpeed = 200.0F * PlayerPrefs.GetFloat("lookXSensitivity");
-			   pitch = Input.gyro.rotationRateUnbiased.y;
-			    yaw = Input.gyro.rotationRateUnbiased.x;
-
-				if ((m_Camera.transform.eulerAngles.x < 400 && m_Camera.transform.eulerAngles.x + pitch > 290) ||
-					(m_Camera.transform.eulerAngles.x > -1 && m_Camera.transform.eulerAngles.x + pitch < 60))
-				{
-					m_Camera.transform.localEulerAngles += new Vector3(pitch, m_Camera.transform.localEulerAngles.y,
-						m_Camera.transform.localEulerAngles.z);
-				}
-				transform.localEulerAngles += new Vector3(0, yaw, 0);
-			}
-			else
-			{
 			   int xSectionSize = Screen.width / 4;
 			   int ySectionSize = Screen.height / 4;
 
@@ -673,7 +662,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				         break; //Don't need to continue in this loop
 			       }
 			    }
-			}
 #endif
         }
 
@@ -812,6 +800,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				SwitchWeapons (curWeapon, false);
 				gameController.SendMessage ("SaveGame");
 				gameController.SendMessage("SetTempText", "Game Saved");
+				IncreaseHalth (20);
 
 				lastSaveTime = Time.time + 10; //Prevents too many rapid save operations at a time.
 				
