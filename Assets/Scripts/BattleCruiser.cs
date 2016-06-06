@@ -80,7 +80,11 @@ public class BattleCruiser : MonoBehaviour {
 		droneCount++;
 		if (droneCount == 5) {
 			droneCount = 0;
-			Invoke ("StartDroneWave", Random.Range (1.00F, 5.0F));
+			if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
+				Invoke ("StartDroneWave", Random.Range (1.00F, 5.0F));
+			} else {
+				Invoke ("StartDroneWave", Random.Range (10.00F, 15.0F));
+			}
 		} else {
 			if (difficulty == 0) {
 				Invoke ("LaunchNextDrone", 3.0F);

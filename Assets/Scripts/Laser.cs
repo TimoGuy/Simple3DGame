@@ -39,6 +39,10 @@ public class Laser : MonoBehaviour {
 		}
 
 	}
+	public void ResetAmmo()
+	{
+		PlayerPrefs.DeleteKey (SceneManager.GetActiveScene ().name + "_" + "batteryCharge");
+	}
 
 	public void ScanTarget()
 	{
@@ -194,9 +198,9 @@ public class Laser : MonoBehaviour {
 		line.enabled = true;
 		firing = true;
 #if !MOBILE_INPUT
-		while (Input.GetButton ("Fire1") && charge > 0)
+		while (Input.GetButton ("Fire1") && charge > 0 && gameObject.activeSelf)
 #else
-		while (CrossPlatformInputManager.GetButton("FireBtn") && charge > 0)
+		while (CrossPlatformInputManager.GetButton("FireBtn") && charge > 0 && gameObject.activeSelf)
 #endif
 		{
 			//line.renderer.

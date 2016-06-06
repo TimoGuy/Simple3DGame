@@ -31,7 +31,7 @@ public class WeaponScript : MonoBehaviour {
 		nextFireTime = 0;
 		detonation_time = 5;
 		GetAmmoLevel ();
-		Invoke ("DisplayWeaponText", 0.5F);
+		//Invoke ("DisplayWeaponText", 0.5F);
 		InvokeRepeating ("ScanTarget", Random.Range(0.5F, 1.0F), 0.5F);
 	}
 		
@@ -147,6 +147,11 @@ public class WeaponScript : MonoBehaviour {
 	{
 		GetAmmoLevel ();
 		DisplayWeaponText ();
+	}
+
+	public void ResetAmmo()
+	{
+		PlayerPrefs.DeleteKey (SceneManager.GetActiveScene ().name + "_" + weaponName + "_ammo");
 	}
 
 	public void SaveAmmo()

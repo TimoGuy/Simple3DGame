@@ -7,44 +7,13 @@
 * can before you are overwhelmed and destroyed.
 * Author: Jonathan L Clark
 * Date: 3/8/2016
-* Update: 5/28/2016, Reved to version 1.1.44 (Alpha 12), Improved the guided rocket
-* now the rocket sends a raycast to find any target directly in front of it before
-* attempting to aquire another target. Rocket turn radius has been decreased for better
-* accuracy. Modified the rocket trails to look better when the rockets turn and curve.
-* Update: 5/30/2016, Reved to version 1.1.45 (Alpha 12), Replaced the health text with a
-* health bar. This bar indicates how much health the user has. Fixed an issue on exit
-* wher the guided rocket is attempting to access the target game object. Added
-* the option to rotate the view using the accelerometor.
-* Update: 5/31/2016, Reved to version 1.1.46 (Alpha 12), Added target distance to active
-* targeting. Modifed the tactical drone to shoot a little ahead of the target, modified the
-* guided rocket to explode once it is close to a target. Increased guided rocket turn radius. Added code that
-* flashes the screen red when the player is hit. Added smoke effect to the rifle. Modified the switch weapon
-* button to be smaller and just say "Weapon"
-* Update: 6/1/2016, Reved to version 1.1.47 (Alpha 12), Preformed a minor refactor of the GameController
-* added tactical drone counts to the screen. Fixed an issue where allies add to the players score when
-* destroyed. Fixed another issue where tactical drones were not being counted as destroyed. Decreased
-* the crate drop rate of the battle cruiser. Fixed some issues with how and when battle cruisers are launched
-* and how the counts are handled for Survival Mode. Cruiser speed decreases as more cruisers are launched. This makes the game
-* more difficult as it becomes more difficult to fight off the drones they produce. No longer updating the screen text
-* when points are scored (as the tick timer updates this for us). Added code to launch cruisers in waves after
-* a certain number of them have passed by. Only incrementing the score if the objects health is at 0; this fixes
-* an issue where the player score increments when a battlecruiser passes the screen. Added the game over screen overlay
-* this will now display "Game Over" when the player is defeated. Fixed an issue in the projectile script where projectiles
-* were Instantiating explosions when destroyed at the end of the game. Optimized this script so objects that detonate
-* only make an explosion when they call their detonate function. Modified the menu script to enable or disable the
-* gyroscope depeninding on the setting. Added a few new game elements to capture mode to make it operational, capture mode
-* has now been added to the main menu.
-* Update: 6/2/2016, Reved to version 1.1.48, Reduced the size of the crate objects. Removed crates from the mini game to improve speed.
-* modified the look angle for Android to prevent it from getting stuck. Removed a number of launch tubes and shooting pillars
-* from the main game to improve performance. Removed life count and replaced it with allied drones. Increased the capture gun ROF.
-* removed a lot of launch tubes from the main game. Fixed an issue where objects and drones were jumping around. Fixed an issue where
-* lives were being updated even when they didnt need to be.
-* Update: 6/3/2016, Reved to version 1.1.49, Removed the gyroscope option from the game. Fixed an issue where the game does not reset
-* the fps controller settings when the victory is achieved. Save point now increases player health. Increased the width and boldness
-* of temporary text. Adjusted the masses of each bullet to make it more realistic. Removed code that saves game objects in the load
-* game object function. Game Objects can only be saved when a save point is passed. (this may be why game objects were doubled). Reduced
-* the number of crates that get re-spawned when a crate is destroyed. Added the new fall again script. This is to handle objects that get
-* stuck in the air. Fixed an issue where grenades were not exploding. 
+* Update: 6/6/2016, Reved to version 1.1.50 (Alpha 13), Fixed an issue 
+* where the scoring was no longer functional. Added ammo and health to the
+* top platform, also increased the collider width of some of the narrow
+* platforms, to make the game a bit more forgiving. Decreased the drone rate of the battlecruiser
+* in non-survival modes. Fixed an issue where the weapon ammo was not being reset
+* on victory or defeat. Fixed the issue where turrets were being saved double
+* in mini game. Fixed an issue where the wrong weapon text was being displayed on startup.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -332,6 +301,25 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			PlayerPrefs.DeleteKey ("Weapon_4" + "_" + SceneManager.GetActiveScene ().name);
 			PlayerPrefs.DeleteKey ("Weapon_5" + "_" + SceneManager.GetActiveScene ().name);
 			PlayerPrefs.DeleteKey ("Weapon_6" + "_" + SceneManager.GetActiveScene ().name);
+			laser.SetActive (true);
+			laserFirePoint.SendMessage ("ResetAmmo");
+			laser.SetActive (false);
+			grenadeLauncher.SetActive (true);
+			grenadeFirePoint.SendMessage ("ResetAmmo");
+			grenadeLauncher.SetActive (false);
+			gatlingGun.SetActive (true);
+			gatlingFirePoint.SendMessage ("ResetAmmo");
+			gatlingGun.SetActive (false);
+			rifle.SetActive (true);
+			rifleFirePoint.SendMessage ("ResetAmmo");
+			rifle.SetActive (false);
+			guidedRocketLauncher.SetActive (true);
+			guidedRocketLaunchPoint.SendMessage ("ResetAmmo");
+			guidedRocketLauncher.SetActive (false);
+			captureGun.SetActive (true);
+			captureGunFirePoint.SendMessage ("ResetAmmo");
+			captureGun.SetActive (false);
+
 		}
 
 		/********************************************

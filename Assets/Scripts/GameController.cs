@@ -43,7 +43,7 @@ public class GameController : MonoBehaviour {
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
 
-	private static string version = "1.1.49 (Alpha)";
+	private static string version = "1.1.50 (Alpha)";
 
 	// Use this for initialization
 	void Start () {
@@ -263,7 +263,7 @@ public class GameController : MonoBehaviour {
 		LoadGameObject("AttackDrone", AttackDroneModel);
 		LoadGameObject("Portal", portalModel);
 		LoadGameObject("AlliedDrone", AlliedDroneModel);
-		LoadGameObject("BattleCruiser", battleCruiserObject);
+		//("BattleCruiser", battleCruiserObject);
 		LoadGameObject("HeavyTurret", heavyTurretObject);
 		LoadGameObject("Turret", turretObject);
 		LoadGameObject("TacticalDrone", TacticalDroneModel);
@@ -280,7 +280,7 @@ public class GameController : MonoBehaviour {
 		SaveGameObject ("Portal");
 		SaveGameObject ("AttackDrone");
 		SaveGameObject ("AlliedDrone");
-		SaveGameObject ("BattleCruiser");
+		//SaveGameObject ("BattleCruiser");
 		SaveGameObject ("HeavyTurret");
 		SaveGameObject ("Turret");
 		SaveGameObject ("TacticalDrone");
