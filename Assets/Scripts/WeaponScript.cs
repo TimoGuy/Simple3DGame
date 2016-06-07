@@ -19,11 +19,14 @@ public class WeaponScript : MonoBehaviour {
 	private bool notActive;
 	private float nextFireTime;
 	private bool ammo_pulled = false;
+	public AudioClip ammoPickup;
+	private AudioSource m_AudioSource;
 
 	private GameObject gameController;
 
 	void Start () {
 		ParticleSystem system = GetComponent<ParticleSystem>();
+		m_AudioSource = GetComponent<AudioSource>();
 		if (system != null) {
 			system.Pause ();
 		}
@@ -33,6 +36,13 @@ public class WeaponScript : MonoBehaviour {
 		GetAmmoLevel ();
 		//Invoke ("DisplayWeaponText", 0.5F);
 		InvokeRepeating ("ScanTarget", Random.Range(0.5F, 1.0F), 0.5F);
+	}
+
+	public void PlayPickupSound()
+	{
+		if (ammoPickup != null && m_AudioSource != null) {
+			m_AudioSource.PlayOneShot (ammoPickup);
+		}
 	}
 		
 	public void DeleteAmmoLevel()

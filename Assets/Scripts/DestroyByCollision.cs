@@ -51,6 +51,10 @@ public class DestroyByCollision : MonoBehaviour {
 
 	public void HitByLaser()
 	{
+		if ((gameObject.CompareTag ("Portal") || CompareTag ("AlliedPortal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
+		{
+			return;
+		}
 		if (DetectLaserHits) {
 			health--;
 			iterations_laser_hit = 0;
@@ -65,10 +69,7 @@ public class DestroyByCollision : MonoBehaviour {
 	{
 		int remove_value = 0;
 		int difficulty = PlayerPrefs.GetInt ("AILevel");
-		if (SceneManager.GetActiveScene ().name.Equals("SurvivalMode") && (gameObject.CompareTag ("Portal") || gameObject.CompareTag ("AlliedPortal"))) {
-			//Destroy (other.gameObject);
-			return;
-		}
+
 		if (other.gameObject.CompareTag("CaptureDart")) {
 			Destroy (other.gameObject);
 			if (CompareTag ("AttackDrone") || CompareTag("TacticalDrone")) {
@@ -116,6 +117,10 @@ public class DestroyByCollision : MonoBehaviour {
 				remove_value = 2;
 			}
 		}
+		if ((gameObject.CompareTag ("Portal") || CompareTag ("AlliedPortal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
+			remove_value = 0;
+		}
+
 		if (remove_value > 0) {
 			health -= remove_value;
 			Destroy (other.gameObject);
@@ -132,7 +137,11 @@ public class DestroyByCollision : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider other) {
-		
+
+		if ((gameObject.CompareTag ("Portal") || CompareTag ("AlliedPortal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
+		{
+				return;
+		}
 		if (other.gameObject.CompareTag ("Explosion")) {
 			health -= 20;
 			if (health < 0)

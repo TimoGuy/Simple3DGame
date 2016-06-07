@@ -14,6 +14,8 @@ public class Laser : MonoBehaviour {
 	public GameObject sparks;
 	private GameObject gameController;
 	private bool ammo_pulled = false;
+	public AudioClip ammoPickup;
+	private AudioSource m_AudioSource;
 	// Use this for initialization
 
 	public void SaveAmmo()
@@ -39,6 +41,14 @@ public class Laser : MonoBehaviour {
 		}
 
 	}
+
+	public void PlayPickupSound()
+	{
+		if (ammoPickup != null && m_AudioSource != null) {
+			m_AudioSource.PlayOneShot (ammoPickup);
+		}
+	}
+
 	public void ResetAmmo()
 	{
 		PlayerPrefs.DeleteKey (SceneManager.GetActiveScene ().name + "_" + "batteryCharge");
@@ -159,6 +169,7 @@ public class Laser : MonoBehaviour {
 	}
 
 	void Start () {
+		m_AudioSource = GetComponent<AudioSource>();
 		gameController = GameObject.FindGameObjectWithTag ("GameController");
 		line = gameObject.GetComponent<LineRenderer> ();
 		line.enabled = false;

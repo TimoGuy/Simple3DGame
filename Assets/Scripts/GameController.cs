@@ -43,7 +43,7 @@ public class GameController : MonoBehaviour {
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
 
-	private static string version = "1.1.50 (Alpha)";
+	private static string version = "1.1.51 (Alpha)";
 
 	// Use this for initialization
 	void Start () {
@@ -51,17 +51,17 @@ public class GameController : MonoBehaviour {
 		if (difficulty == 0) {
 			default_drone_launch_time = 45;
 			droneLaunchTime = 30;
-			cruiserLaunchTime = 300;
+			cruiserLaunchTime = 200;
 			tactical_drone_launch_bound = 20;
 		} else if (difficulty == 1) {
 			default_drone_launch_time = 30;
 			droneLaunchTime = 20;
-			cruiserLaunchTime = 250;
+			cruiserLaunchTime = 180;
 			tactical_drone_launch_bound = 10;
 		} else {
 			default_drone_launch_time = 20;
 			droneLaunchTime = 15;
-			cruiserLaunchTime = 150;
+			cruiserLaunchTime = 120;
 			tactical_drone_launch_bound = 5;
 		}
 		damageImage = GameObject.Find ("DamageImage").GetComponent<Image> ();
@@ -544,8 +544,9 @@ public class GameController : MonoBehaviour {
 			}
 			cruisers_launched++;
 			//Start launching waves of two cruisers
-			if (cruisers_launched > 5 && num_cruisers_in_wave < 2 || cruisers_launched > 12 && num_cruisers_in_wave < 4) {
-				Invoke ("LaunchCruiser", 1.0F);
+			if ((cruisers_launched > 5 && num_cruisers_in_wave < 1) || (cruisers_launched > 12 && num_cruisers_in_wave < 3) ||
+				(cruisers_launched > 18 && num_cruisers_in_wave < 6)) {
+				Invoke ("LaunchCruiser", 2.0F);
 				num_cruisers_in_wave++;
 			} else {
 				Invoke ("LaunchCruiser", cruiserLaunchTime);

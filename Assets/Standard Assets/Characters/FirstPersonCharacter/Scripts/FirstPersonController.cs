@@ -14,6 +14,11 @@
 * in non-survival modes. Fixed an issue where the weapon ammo was not being reset
 * on victory or defeat. Fixed the issue where turrets were being saved double
 * in mini game. Fixed an issue where the wrong weapon text was being displayed on startup.
+* Update: 6/7/2016, Reved to version 1.1.51 (Alpha 13), Fixed an issue where
+* ammo pickup sounds were not playing. Fixed an issue where sounds were not plaing in survival mode
+* Fixed an issue where it was possible to destroy portholes in survival mode. Decreased
+* starting cruiser launch time in the game controller. Fixed an issue where 3 cruisers were appearing
+* on the intense wave when it should have only been 2. Also added a third wave of 6 cruisers.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -88,7 +93,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		public int team = 1;
 
 		private GameObject gameController;
-		public AudioClip ammoPickup;
 		private int curWeapon = 0;
 		private int health = 100;
 		private int lives = 1;
@@ -135,7 +139,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 			lastSaveTime = Random.Range(5.00F, 30.0F);
 			Invoke ("InitialDisplay", 0.5F);
-			SwitchWeapons(curWeapon, true);
+			SwitchWeapons(curWeapon, true, false);
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
         }
@@ -337,7 +341,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 						//SceneManager.LoadScene ("MainMenu");
 						gameController.SendMessage ("GameOver");
-						SwitchWeapons (-1, false); //deactivate weapons
+						SwitchWeapons (-1, false, false); //deactivate weapons
 						gameOver = true;
 						Invoke ("LoadMainMenu", 5.0F);
 
@@ -355,7 +359,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					{
 						gameController.SendMessage ("SetDefaults");
 						gameController.SendMessage ("GameOver");
-						SwitchWeapons (-1, false); //deactivate weapons
+						SwitchWeapons (-1, false, false); //deactivate weapons
 						Invoke ("LoadMainMenu", 5.0F);
 						gameOver = true;
 						ClearWeaponSaves ();
@@ -404,7 +408,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         * DESCRIPTION: Switches the players weapon object to the next
         * available one.
         ********************************************/
-		public void SwitchWeapons(int newWeapon, bool save)
+		public void SwitchWeapons(int newWeapon, bool save, bool playReload)
 		{
 			rifle.SetActive (false);
 			gatlingGun.SetActive (false);
@@ -417,24 +421,45 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			if (newWeapon == 0) {
 				rifle.SetActive (true);
 				rifleFirePoint.SendMessage ("WeaponActive");
+				if (playReload) {
+					rifleFirePoint.SendMessage ("PlayPickupSound");
+				}
 			} else if (newWeapon == 1) {
 				grenadeLauncher.SetActive (true);
 				grenadeFirePoint.SendMessage ("WeaponActive");
+				if (playReload) {
+					grenadeFirePoint.SendMessage ("PlayPickupSound");
+				}
 			} else if (newWeapon == 2) {
 				gatlingGun.SetActive (true);
 				gatlingFirePoint.SendMessage ("WeaponActive");
+				if (playReload) {
+					gatlingFirePoint.SendMessage ("PlayPickupSound");
+				}
 			} else if (newWeapon == 3) {
 				laser.SetActive (true);
 				laserFirePoint.SendMessage ("WeaponActive");
+				if (playReload) {
+					laserFirePoint.SendMessage ("PlayPickupSound");
+				}
 			} else if (newWeapon == 4) {
 				rocketLauncher.SetActive (true);
 				rocketLaunchPoint.SendMessage ("WeaponActive");
+				if (playReload) {
+					rocketLaunchPoint.SendMessage ("PlayPickupSound");
+				}
 			} else if (newWeapon == 5) {
 				guidedRocketLauncher.SetActive (true);
 				guidedRocketLaunchPoint.SendMessage ("WeaponActive");
+				if (playReload) {
+					guidedRocketLaunchPoint.SendMessage ("PlayPickupSound");
+				}
 			} else if (newWeapon == 6) {
 				captureGun.SetActive (true);
 				captureGunFirePoint.SendMessage ("WeaponActive");
+				if (playReload) {
+					captureGunFirePoint.SendMessage ("PlayPickupSound");
+				}
 			}
 		}
 
@@ -443,7 +468,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
 			if ((Input.GetKeyDown ("b") || CrossPlatformInputManager.GetButtonDown("Fire2")) && gameOver == false) {
 				NextWeapon ();
-				SwitchWeapons(curWeapon, true);
+				SwitchWeapons(curWeapon, true, false);
 				//DisplayStatusText();
 			}
 			if (gameOver == false) {
@@ -658,15 +683,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			if (hasWeapon == 0) {
 				hasWeapon = 1;
 				Destroy (weapon);
-				m_AudioSource.PlayOneShot (ammoPickup);
+				//m_AudioSource.PlayOneShot (ammoPickup);
 				gameController.SendMessage("SetTempText", weaponMessage); 
+				SwitchWeapons (curWeapon, true, true);
 			} else {
 				bool isActive = attachedWeapon.activeSelf;
 				attachedWeapon.SetActive (true);
-				m_AudioSource.PlayOneShot (ammoPickup);
+				//m_AudioSource.PlayOneShot (ammoPickup);
 				attachedFirePoint.SendMessage ("CollectAmmo", weapon);
 				attachedWeapon.SetActive (isActive);
-				SwitchWeapons (curWeapon, true);
+				SwitchWeapons (curWeapon, true, true);
 				gameController.SendMessage("ammoMessage", weaponMessage); 
 			}
 			return hasWeapon;
@@ -680,11 +706,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		{
 			bool isActive = weapon.activeSelf;
 			weapon.SetActive (true);
-			m_AudioSource.PlayOneShot (ammoPickup);
+			//m_AudioSource.PlayOneShot (ammoPickup);
 			firePoint.SendMessage ("CollectAmmo", inputPack);
 			weapon.SetActive (isActive);
-			SwitchWeapons (curWeapon, true);
+			SwitchWeapons (curWeapon, true, true);
 			gameController.SendMessage("SetTempText", message); 
+
 		}
 		void OnTriggerEnter(Collider other) {
 
@@ -720,7 +747,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					laser.SetActive (true);
 					laserFirePoint.SendMessage ("CollectAmmo", other.gameObject);
 					laser.SetActive (isActive);
-					SwitchWeapons (curWeapon, true);
+					SwitchWeapons (curWeapon, true, true);
 					gameController.SendMessage("SetTempText", "Picked up laser gun"); 
 				}
 			}
@@ -756,7 +783,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 						health = 100;
 					}
 					ReduceHealth (0);
-					GetComponent<AudioSource>().PlayOneShot(ammoPickup, 3.0F);
+					//GetComponent<AudioSource>().PlayOneShot(ammoPickup, 3.0F);
 					gameController.SendMessage("SetTempText", "Picked up health"); 
 				}
 			}
@@ -785,7 +812,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					PlayerPrefs.SetInt ("Weapon_" + i.ToString() + "_" + SceneManager.GetActiveScene ().name, currentWeapons[i]);
 				}
 				SavePrefs ();
-				SwitchWeapons (curWeapon, false);
+				SwitchWeapons (curWeapon, false, false);
 				gameController.SendMessage ("SaveGame");
 				gameController.SendMessage("SetTempText", "Game Saved");
 				IncreaseHalth (20);
