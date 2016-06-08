@@ -42,8 +42,9 @@ public class GameController : MonoBehaviour {
 	private float default_drone_launch_time = 30;
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
+	private bool waveLaunched = false;
 
-	private static string version = "1.1.51 (Alpha)";
+	private static string version = "1.1.52 (Alpha)";
 
 	// Use this for initialization
 	void Start () {
@@ -544,15 +545,21 @@ public class GameController : MonoBehaviour {
 			}
 			cruisers_launched++;
 			//Start launching waves of two cruisers
-			if ((cruisers_launched > 5 && num_cruisers_in_wave < 1) || (cruisers_launched > 12 && num_cruisers_in_wave < 3) ||
-				(cruisers_launched > 18 && num_cruisers_in_wave < 6)) {
+			if (((cruisers_launched % 5 == 0) && num_cruisers_in_wave < 1) || ((cruisers_launched % 12 == 0) && num_cruisers_in_wave < 1) ||
+				((cruisers_launched % 18 == 0) && num_cruisers_in_wave < 1)) {
 				Invoke ("LaunchCruiser", 2.0F);
 				num_cruisers_in_wave++;
+				waveLaunched = true;
 			} else {
-				Invoke ("LaunchCruiser", cruiserLaunchTime);
-				if (cruiserLaunchTime > 40) {
-					cruiserLaunchTime -= 10;
-					num_cruisers_in_wave = 0;
+				if (waveLaunched) {
+					waveLaunched = false;
+					cruiserLaunchTime = 200; //Give the player a break
+				} else {
+					Invoke ("LaunchCruiser", cruiserLaunchTime);
+					if (cruiserLaunchTime > 40) {
+						cruiserLaunchTime -= 10;
+						num_cruisers_in_wave = 0;
+					}
 				}
 			}
 		}

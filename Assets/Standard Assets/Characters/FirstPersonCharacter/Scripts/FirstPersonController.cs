@@ -19,6 +19,10 @@
 * Fixed an issue where it was possible to destroy portholes in survival mode. Decreased
 * starting cruiser launch time in the game controller. Fixed an issue where 3 cruisers were appearing
 * on the intense wave when it should have only been 2. Also added a third wave of 6 cruisers.
+* Update: 6/8/2016, Reved to version 1.1.52 (Alpha 13), Added special thanks notes to the 
+* about dialog text. Moved the weapon text up. Modified the code for survival mode to give the player
+* a longer rest after fighting two battle cruisers. Also fixed an issue where two more battle cruisers
+* would come after the first two.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
