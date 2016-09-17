@@ -7,22 +7,26 @@
 * can before you are overwhelmed and destroyed.
 * Author: Jonathan L Clark
 * Date: 3/8/2016
-* Update: 6/6/2016, Reved to version 1.1.50 (Alpha 13), Fixed an issue 
-* where the scoring was no longer functional. Added ammo and health to the
-* top platform, also increased the collider width of some of the narrow
-* platforms, to make the game a bit more forgiving. Decreased the drone rate of the battlecruiser
-* in non-survival modes. Fixed an issue where the weapon ammo was not being reset
-* on victory or defeat. Fixed the issue where turrets were being saved double
-* in mini game. Fixed an issue where the wrong weapon text was being displayed on startup.
-* Update: 6/7/2016, Reved to version 1.1.51 (Alpha 13), Fixed an issue where
-* ammo pickup sounds were not playing. Fixed an issue where sounds were not plaing in survival mode
-* Fixed an issue where it was possible to destroy portholes in survival mode. Decreased
-* starting cruiser launch time in the game controller. Fixed an issue where 3 cruisers were appearing
-* on the intense wave when it should have only been 2. Also added a third wave of 6 cruisers.
-* Update: 6/8/2016, Reved to version 1.1.52 (Alpha 13), Added special thanks notes to the 
-* about dialog text. Moved the weapon text up. Modified the code for survival mode to give the player
-* a longer rest after fighting two battle cruisers. Also fixed an issue where two more battle cruisers
-* would come after the first two.
+* Update: 9/15/2016, Reved Sphere Crusher to version 1.3.0 and removed the Beta tag
+* as this game is now in release. Removed the fire buttons, replaced with touch sensitive
+* fire area of screen.
+* Update: 9/16/2016, Reved Sphere Crusher to version 1.3.1 Modified fire button to require
+* user to let off to fire. Modified the joystick to have a larger movement range. Added the
+* new fire area to the laser weapon, removed the 'jump' button, tapping high on the
+* screen now allows the character to jump. Removed several items that were throwing 
+* warnings. Pulled all weapon information into Dicationary structures, now using an enum
+* to access which weapon is which instead of integers. This will improve code clarity and make
+* code simplification easier.
+* Update: 9/17/2016, Reved Sphere Crusher to version 1.3.2 Fixed an issue where the
+* jump button was not working on Windows. Replaced large sections of repeat code with loops
+* reducing the code by about 200 lines. Now calling 'WeaponStrings' weapon type. Removed
+* all unused params from pickup weapon. Cleaned up the code that handles picking up
+* ammo. Removed all tags from ammo, we now detect an ammo pickup by name. Removed tags
+* from all weapon pickups, now using the names to identify each weapon. GuidedRocketLauncher
+* was changed to GuidedMissileLauncher to prevent name matching issues in the future. Modified
+* the health pack to also use the name instead of the tag. Removed the tag from the level marker.
+* Modified all bullets to be identified by name (not tag). Removed the tag from all crates, now
+* accessing with just the name.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -58,6 +62,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
         [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
 
+		public enum WeaponType { None=-1, Rifle=0, GrenadeLauncher=1, MachineGun=2, Laser=3, RocketLauncher=4, GuidedMissileLauncher=5, CaptureGun=6};
         private Camera m_Camera;
         private bool m_Jump;
         private float m_YRotation;
@@ -70,29 +75,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float m_StepCycle;
         private float m_NextStep;
         private bool m_Jumping;
+
+		private Dictionary<WeaponType, GameObject> weapons = new Dictionary<WeaponType, GameObject> ();
+		private Dictionary<WeaponType, GameObject> firePoints = new Dictionary<WeaponType, GameObject> ();
 	
         private AudioSource m_AudioSource;
-
-		private GameObject gatlingFirePoint;
-		private GameObject gatlingGun;
-
-		private GameObject grenadeFirePoint;
-		private GameObject grenadeLauncher;
-
-		private GameObject rifle;
-		private GameObject rifleFirePoint;
-
-		private GameObject laser;
-		private GameObject laserFirePoint;
-
-		private GameObject rocketLauncher;
-		private GameObject rocketLaunchPoint;
-
-		private GameObject guidedRocketLauncher;
-		private GameObject guidedRocketLaunchPoint;
-
-		private GameObject captureGun;
-		private GameObject captureGunFirePoint;
 		private bool gameOver = false;
 		public int team = 1;
 
@@ -124,26 +111,23 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			for (int i = 0; i < currentWeapons.Length; i++) {
 				currentWeapons[i] = SafeLoadPref (i.ToString () + "_" + SceneManager.GetActiveScene ().name, 0);
 			}
-			//for (int i = 0; i < currentWeapons.Length; i++) {
-			//	currentWeapons [i] = 0;
-			//}
 			LoadWeapons ();
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				LoadPrefs ();
 			}
 			if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode")) {
-				currentWeapons [6] = 1; //Always have the capture gun
-				currentWeapons [0] = 0;
+				currentWeapons [(int) WeaponType.CaptureGun] = 1; //Always have the capture gun
+				currentWeapons [(int) WeaponType.Rifle] = 0;
 				curWeapon = 6;
 			}
 			else
 			{
-				currentWeapons [0] = 1; //Always have the rifle
+				currentWeapons [(int)WeaponType.Rifle] = 1; //Always have the rifle
 			}
 
 			lastSaveTime = Random.Range(5.00F, 30.0F);
 			Invoke ("InitialDisplay", 0.5F);
-			SwitchWeapons(curWeapon, true, false);
+			SwitchWeapons((WeaponType)curWeapon, true, false);
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
         }
@@ -202,18 +186,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
         ********************************************/
 		private void LoadPrefs()
 		{
-			float startX = SafeLoadPref ("StartLocationX", 0.0F);//float startX = PlayerPrefs.GetFloat ("StartLocationX");
-			float startY = SafeLoadPref ("StartLocationY", 0.0F);//PlayerPrefs.GetFloat ("StartLocationY");
-			float startZ = SafeLoadPref ("StartLocationZ", 0.0F);//PlayerPrefs.GetFloat ("StartLocationZ");
+			float startX = SafeLoadPref ("StartLocationX", 0.0F);
+			float startY = SafeLoadPref ("StartLocationY", 0.0F);
+			float startZ = SafeLoadPref ("StartLocationZ", 0.0F);
 			curWeapon = SafeLoadPref ("curWeapon", 0);
 			health = SafeLoadPref ("health", 100);
 			lives = SafeLoadPref ("lives", 5);
-			currentWeapons [6] = SafeLoadPref ("Weapon_6", 0);//PlayerPrefs.GetInt ("hasCaptureGun");
-			currentWeapons[5] = SafeLoadPref ("Weapon_5", 0);//PlayerPrefs.GetInt("hasGuidedRocket");
-			currentWeapons[4] = SafeLoadPref ("Weapon_4", 0);//PlayerPrefs.GetInt("hasRocket");
-			currentWeapons[3] = SafeLoadPref ("Weapon_3", 0);//PlayerPrefs.GetInt ("hasLaser");
-			currentWeapons[2] = SafeLoadPref ("Weapon_2", 0);//PlayerPrefs.GetInt ("hasMachineGun");
-			currentWeapons[1] = SafeLoadPref ("Weapon_1", 0);//PlayerPrefs.GetInt ("hasGrenadeLauncher");
+			for (int i = 0; i < weapons.Count; i++) {
+				currentWeapons [i] = SafeLoadPref ("Weapon_" + i.ToString(), 0);
+			}
 			if (startX == 0.0F && startY == 0.0F && startZ == 0.0F) {
 			} else {
 				transform.position = new Vector3(startX, startY, startZ + 5.0F);
@@ -223,24 +204,23 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		/********************************************
         * LOAD WEAPONS
         * DESCRIPTION: Loads all the weapons from the fps
-        * game object.
         ********************************************/
 		private void LoadWeapons()
 		{
-			rifle = GameObject.Find ("FirstPersonCharacter/Rifle");
-			rifleFirePoint = GameObject.Find ("FirstPersonCharacter/Rifle/RifleFirePoint");
-			grenadeLauncher = GameObject.Find ("FirstPersonCharacter/GrenadeLauncher");
-			grenadeFirePoint = GameObject.Find ("FirstPersonCharacter/GrenadeLauncher/GrenadeFirePoint");
-			laser = GameObject.Find ("FirstPersonCharacter/LaserGun");
-			laserFirePoint = GameObject.Find ("FirstPersonCharacter/LaserGun/LaserFirePoint");
-			rocketLauncher = GameObject.Find ("FirstPersonCharacter/RocketLauncher");
-			rocketLaunchPoint = GameObject.Find ("FirstPersonCharacter/RocketLauncher/LaunchPoint");
-			guidedRocketLauncher = GameObject.Find ("FirstPersonCharacter/GuidedRocketLauncher");
-			guidedRocketLaunchPoint = GameObject.Find ("FirstPersonCharacter/GuidedRocketLauncher/LaunchPoint");
-			captureGun = GameObject.Find ("FirstPersonCharacter/DroneCaptureRifle");
-			captureGunFirePoint = GameObject.Find ("FirstPersonCharacter/DroneCaptureRifle/LaunchPoint");
-			gatlingGun = GameObject.Find ("FirstPersonCharacter/MachineGun");
-			gatlingFirePoint = GameObject.Find ("FirstPersonCharacter/MachineGun/MachineGunFirePoint");
+			weapons.Add (WeaponType.Rifle, GameObject.Find ("FirstPersonCharacter/Rifle"));
+			firePoints.Add(WeaponType.Rifle, GameObject.Find ("FirstPersonCharacter/Rifle/RifleFirePoint"));
+			weapons.Add(WeaponType.GrenadeLauncher, GameObject.Find ("FirstPersonCharacter/GrenadeLauncher"));
+			firePoints.Add(WeaponType.GrenadeLauncher, GameObject.Find ("FirstPersonCharacter/GrenadeLauncher/GrenadeFirePoint"));
+			weapons.Add(WeaponType.Laser, GameObject.Find ("FirstPersonCharacter/LaserGun"));
+			firePoints.Add(WeaponType.Laser, GameObject.Find ("FirstPersonCharacter/LaserGun/LaserFirePoint"));
+			weapons.Add(WeaponType.RocketLauncher, GameObject.Find ("FirstPersonCharacter/RocketLauncher"));
+			firePoints.Add(WeaponType.RocketLauncher, GameObject.Find ("FirstPersonCharacter/RocketLauncher/LaunchPoint"));
+			weapons.Add(WeaponType.GuidedMissileLauncher, GameObject.Find ("FirstPersonCharacter/GuidedRocketLauncher"));
+			firePoints.Add(WeaponType.GuidedMissileLauncher, GameObject.Find ("FirstPersonCharacter/GuidedRocketLauncher/LaunchPoint"));
+			weapons.Add(WeaponType.CaptureGun, GameObject.Find ("FirstPersonCharacter/DroneCaptureRifle"));
+			firePoints.Add(WeaponType.CaptureGun, GameObject.Find ("FirstPersonCharacter/DroneCaptureRifle/LaunchPoint"));
+			weapons.Add(WeaponType.MachineGun, GameObject.Find ("FirstPersonCharacter/MachineGun"));
+			firePoints.Add(WeaponType.MachineGun, GameObject.Find ("FirstPersonCharacter/MachineGun/MachineGunFirePoint"));
 			gameController = GameObject.FindGameObjectWithTag ("GameController");
 
 		}
@@ -256,8 +236,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		/********************************************
         * INCREASE HEALTH
-        * DESCRIPTION: Increase the players health by
-        * the input ammount.
         ********************************************/
 		public void IncreaseHalth(int amount)
 		{
@@ -270,31 +248,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		/********************************************
         * CLEAR WEAPON SAVES
-        * DESCRIPTION: Deletes all the ammo levels for
-        * each weapon.
         ********************************************/
 		private void ClearWeaponSaves()
 		{
-			rifle.SetActive (true);
-			rifleFirePoint.SendMessage ("DeleteAmmoLevel");
-			rifle.SetActive (false);
-			laser.SetActive (true);
-			laserFirePoint.SendMessage ("DeleteAmmoLevel");
-			laser.SetActive (false);
-			grenadeLauncher.SetActive (true);
-			grenadeFirePoint.SendMessage ("DeleteAmmoLevel");
-			grenadeLauncher.SetActive (false);
-			gatlingGun.SetActive (true);
-			gatlingFirePoint.SendMessage ("DeleteAmmoLevel");
-			gatlingGun.SetActive (false);
-			guidedRocketLauncher.SetActive (true);
-			guidedRocketLaunchPoint.SendMessage ("DeleteAmmoLevel");
-			guidedRocketLauncher.SetActive (false);
-			captureGun.SetActive (true);
-			captureGunFirePoint.SendMessage ("DeleteAmmoLevel");
-			captureGun.SetActive (false);
+			foreach (WeaponType weapon in weapons.Keys) {
+				weapons [weapon].SetActive (true);
+				firePoints[weapon].SendMessage ("DeleteAmmoLevel");
+				weapons [weapon].SetActive (false);
+			}
 		}
 
+		/*******************************************
+        * CLEAR FIRST PERSON CONTROLLER
+        *******************************************/
 		private void ClearFirstPersonController()
 		{
 			PlayerPrefs.DeleteKey("StartLocationX" + "_" + SceneManager.GetActiveScene ().name);
@@ -303,37 +269,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			PlayerPrefs.DeleteKey ("health" +  "_" + SceneManager.GetActiveScene ().name);
 			PlayerPrefs.DeleteKey ("lives" +  "_" + SceneManager.GetActiveScene ().name);
 			PlayerPrefs.DeleteKey ("curWeapon" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("Weapon_1" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("Weapon_2" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("Weapon_3" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("Weapon_4" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("Weapon_5" + "_" + SceneManager.GetActiveScene ().name);
-			PlayerPrefs.DeleteKey ("Weapon_6" + "_" + SceneManager.GetActiveScene ().name);
-			laser.SetActive (true);
-			laserFirePoint.SendMessage ("ResetAmmo");
-			laser.SetActive (false);
-			grenadeLauncher.SetActive (true);
-			grenadeFirePoint.SendMessage ("ResetAmmo");
-			grenadeLauncher.SetActive (false);
-			gatlingGun.SetActive (true);
-			gatlingFirePoint.SendMessage ("ResetAmmo");
-			gatlingGun.SetActive (false);
-			rifle.SetActive (true);
-			rifleFirePoint.SendMessage ("ResetAmmo");
-			rifle.SetActive (false);
-			guidedRocketLauncher.SetActive (true);
-			guidedRocketLaunchPoint.SendMessage ("ResetAmmo");
-			guidedRocketLauncher.SetActive (false);
-			captureGun.SetActive (true);
-			captureGunFirePoint.SendMessage ("ResetAmmo");
-			captureGun.SetActive (false);
-
+			foreach (WeaponType weapon in weapons.Keys) {
+				PlayerPrefs.DeleteKey ("Weapon_" + ((int)weapon).ToString() + "_" + SceneManager.GetActiveScene ().name);
+				weapons [weapon].SetActive (true);
+				firePoints[weapon].SendMessage ("ResetAmmo");
+				weapons [weapon].SetActive (false);
+			}
 		}
 
 		/********************************************
         * REDUCE HEALTH
         * DESCRIPTION: Reduce the players health by
-        * the input ammount.
         ********************************************/
 		public void ReduceHealth(int amount)
 		{
@@ -343,9 +289,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				{
 					lives--;
 					if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
-						//SceneManager.LoadScene ("MainMenu");
 						gameController.SendMessage ("GameOver");
-						SwitchWeapons (-1, false, false); //deactivate weapons
+						SwitchWeapons (WeaponType.None, false, false); //deactivate weapons
 						gameOver = true;
 						Invoke ("LoadMainMenu", 5.0F);
 
@@ -363,13 +308,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					{
 						gameController.SendMessage ("SetDefaults");
 						gameController.SendMessage ("GameOver");
-						SwitchWeapons (-1, false, false); //deactivate weapons
+						SwitchWeapons (WeaponType.None, false, false); //deactivate weapons
 						Invoke ("LoadMainMenu", 5.0F);
 						gameOver = true;
 						ClearWeaponSaves ();
 						ClearFirstPersonController ();
 						PlayerPrefs.Save ();
-						//SceneManager.LoadScene ("MiniGame");
 					}
 				}
 			}
@@ -380,6 +324,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			}
 		}
 
+		/********************************************
+        * LOAD MAIN MENU
+        ********************************************/
 		private void LoadMainMenu()
 		{
 			SceneManager.LoadScene ("MainMenu");
@@ -387,8 +334,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		/********************************************
         * NEXT WEAPON HEALTH
-        * DESCRIPTION: Switches the players weapon to the next
-        * available one.
+        * DESCRIPTION: Switches to the next available weapon
         ********************************************/
 		private void NextWeapon()
 		{
@@ -409,62 +355,54 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		/********************************************
         * SWITCH WEAPONS
-        * DESCRIPTION: Switches the players weapon object to the next
-        * available one.
+        * DESCRIPTION: Switches the players weapon
         ********************************************/
-		public void SwitchWeapons(int newWeapon, bool save, bool playReload)
+		public void SwitchWeapons(WeaponType newWeapon, bool save, bool playReload)
 		{
-			rifle.SetActive (false);
-			gatlingGun.SetActive (false);
-			grenadeLauncher.SetActive (false);
-			laser.SetActive (false);
-			rocketLauncher.SetActive (false);
-			guidedRocketLauncher.SetActive (false);
-			captureGun.SetActive (false);
-			curWeapon = newWeapon;
-			if (newWeapon == 0) {
-				rifle.SetActive (true);
-				rifleFirePoint.SendMessage ("WeaponActive");
-				if (playReload) {
-					rifleFirePoint.SendMessage ("PlayPickupSound");
-				}
-			} else if (newWeapon == 1) {
-				grenadeLauncher.SetActive (true);
-				grenadeFirePoint.SendMessage ("WeaponActive");
-				if (playReload) {
-					grenadeFirePoint.SendMessage ("PlayPickupSound");
-				}
-			} else if (newWeapon == 2) {
-				gatlingGun.SetActive (true);
-				gatlingFirePoint.SendMessage ("WeaponActive");
-				if (playReload) {
-					gatlingFirePoint.SendMessage ("PlayPickupSound");
-				}
-			} else if (newWeapon == 3) {
-				laser.SetActive (true);
-				laserFirePoint.SendMessage ("WeaponActive");
-				if (playReload) {
-					laserFirePoint.SendMessage ("PlayPickupSound");
-				}
-			} else if (newWeapon == 4) {
-				rocketLauncher.SetActive (true);
-				rocketLaunchPoint.SendMessage ("WeaponActive");
-				if (playReload) {
-					rocketLaunchPoint.SendMessage ("PlayPickupSound");
-				}
-			} else if (newWeapon == 5) {
-				guidedRocketLauncher.SetActive (true);
-				guidedRocketLaunchPoint.SendMessage ("WeaponActive");
-				if (playReload) {
-					guidedRocketLaunchPoint.SendMessage ("PlayPickupSound");
-				}
-			} else if (newWeapon == 6) {
-				captureGun.SetActive (true);
-				captureGunFirePoint.SendMessage ("WeaponActive");
-				if (playReload) {
-					captureGunFirePoint.SendMessage ("PlayPickupSound");
+			//Deactive all weapons
+			foreach (WeaponType weapon in weapons.Keys) {
+				weapons [weapon].SetActive (false);
+			}
+
+			curWeapon = (int)newWeapon;
+
+			weapons [newWeapon].SetActive (true);
+			firePoints[newWeapon].SendMessage ("WeaponActive");
+			if (playReload) {
+				firePoints[newWeapon].SendMessage ("PlayPickupSound");
+			}
+		}
+
+		/*****************************************************
+        * IS HOLDING JUMP (MOBILE ONLY)
+        *****************************************************/
+		bool is_holding_jump()
+		{
+			int ySelectionZone = Screen.height / 6;
+			for (int i = 0; i < Input.touchCount; i++)
+			{
+				//Second 6th of the screen from the top
+				if (Input.GetTouch(i).position.y < ySelectionZone * 5 &&  Input.GetTouch(i).position.y > ySelectionZone * 4)
+				{
+					return true;
 				}
 			}
+			return false;
+		}
+
+		bool last_time_holding_jump = false;
+		bool pressed_jump_area()
+		{
+			if (is_holding_jump() && !last_time_holding_jump)
+			{
+				last_time_holding_jump = true;
+				return true;
+			}
+			else if (!is_holding_jump() && last_time_holding_jump)
+			{
+				last_time_holding_jump = false;
+			}
+			return false;
 		}
 
         // Update is called once per frame
@@ -472,8 +410,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
 			if ((Input.GetKeyDown ("b") || CrossPlatformInputManager.GetButtonDown("Fire2")) && gameOver == false) {
 				NextWeapon ();
-				SwitchWeapons(curWeapon, true, false);
-				//DisplayStatusText();
+				SwitchWeapons((WeaponType)curWeapon, true, false);
 			}
 			if (gameOver == false) {
 				RotateView ();
@@ -481,7 +418,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // the jump state needs to read here to make sure it is not missed
             if (!m_Jump)
             {
-                m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
+#if MOBILE_INTPUT
+				m_Jump = pressed_jump_area ();
+#else
+				m_Jump = CrossPlatformInputManager.GetButton("Jump");
+#endif
             }
 
             if (!m_PreviouslyGrounded && m_CharacterController.isGrounded)
@@ -626,8 +567,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // keep track of whether or not the character is walking or running
             m_IsWalking = !Input.GetKey(KeyCode.LeftShift);
 #endif
-			//Debug.Log (horizontal);
-			//Debug.Log (vertical);
             // set the desired speed to be walking or running
             speed = m_IsWalking ? m_WalkSpeed : m_RunSpeed;
             m_Input = new Vector2(horizontal, vertical);
@@ -682,102 +621,72 @@ namespace UnityStandardAssets.Characters.FirstPerson
 #endif
         }
 
-		int PickupWeapon(GameObject weapon, GameObject attachedWeapon, GameObject attachedFirePoint, int hasWeapon, string weaponPref, string weaponMessage, string ammoMessage)
+		/*************************************************
+        * PICKUP WEAPON
+        *************************************************/
+		void PickupWeapon(GameObject weapon, WeaponType weaponType, string weaponMessage, string ammoMessage)
 		{
-			if (hasWeapon == 0) {
-				hasWeapon = 1;
+			if (currentWeapons[(int)weaponType] == 0) {
+				currentWeapons[(int)weaponType] = 1;
 				Destroy (weapon);
-				//m_AudioSource.PlayOneShot (ammoPickup);
 				gameController.SendMessage("SetTempText", weaponMessage); 
-				SwitchWeapons (curWeapon, true, true);
+				//SwitchWeapons ((WeaponType)curWeapon, true, true);
 			} else {
-				bool isActive = attachedWeapon.activeSelf;
-				attachedWeapon.SetActive (true);
-				//m_AudioSource.PlayOneShot (ammoPickup);
-				attachedFirePoint.SendMessage ("CollectAmmo", weapon);
-				attachedWeapon.SetActive (isActive);
-				SwitchWeapons (curWeapon, true, true);
+				bool isActive = weapons [weaponType];
+				weapons [weaponType].SetActive (true);
+				firePoints[weaponType].SendMessage ("CollectAmmo", weapon);
+				weapons [weaponType].SetActive (isActive);
+				//SwitchWeapons ((WeaponType)curWeapon, true, true);
 				gameController.SendMessage("ammoMessage", weaponMessage); 
 			}
-			return hasWeapon;
+			SwitchWeapons ((WeaponType)curWeapon, true, true);
 		}
 
 		/***********************************************
         * PICKUP AMMO
-        * DESCRIPTION: Handles picking up an ammo item.
         ***********************************************/
-		void PickupAmmo(GameObject inputPack, GameObject weapon, GameObject firePoint, string message)
+		void PickupAmmo(GameObject inputPack, WeaponType weaponType, string message)
 		{
-			bool isActive = weapon.activeSelf;
-			weapon.SetActive (true);
-			//m_AudioSource.PlayOneShot (ammoPickup);
-			firePoint.SendMessage ("CollectAmmo", inputPack);
-			weapon.SetActive (isActive);
-			SwitchWeapons (curWeapon, true, true);
+			bool isActive = weapons [weaponType].activeSelf;
+			weapons [weaponType].SetActive (true);
+			firePoints[weaponType].SendMessage ("CollectAmmo", inputPack);
+			weapons [weaponType].SetActive (isActive);
+			SwitchWeapons ((WeaponType)curWeapon, true, true);
 			gameController.SendMessage("SetTempText", message); 
 
 		}
-		void OnTriggerEnter(Collider other) {
 
-			if (other.gameObject.CompareTag ("RifleAmmo")) {
-				PickupAmmo(other.gameObject, rifle, rifleFirePoint, "Picked up rifle ammo");
+		void OnTriggerEnter(Collider other) {
+			//Is it a weapon or ammo?
+			foreach (WeaponType weaponType in weapons.Keys) {
+				if (other.gameObject.name.Contains (weaponType.ToString () + "AmmoCollect")) {
+					PickupAmmo (other.gameObject, weaponType, "Picked up " + weaponType.ToString ().ToLower () + " ammo");
+					break;
+				} else if (other.gameObject.name.Contains (weaponType.ToString () + "PickupCollect") && !other.gameObject.name.Contains("Laser")) {
+					PickupWeapon(other.gameObject, weaponType, "Picked up " + weaponType.ToString(), "Picked up " + weaponType.ToString ().ToLower () + " ammo");
+					break;
+				}
 			}
-			if (other.gameObject.CompareTag ("MachineGunAmmo")) {
-				PickupAmmo(other.gameObject, gatlingGun, gatlingFirePoint, "Picked up machine gun ammo");
-			}
-			if (other.gameObject.CompareTag ("GrenadeAmmo")) {
-				PickupAmmo(other.gameObject, grenadeLauncher, grenadeFirePoint, "Picked up grenades");
-			}
-			if (other.gameObject.CompareTag ("RocketAmmo")) {
-				PickupAmmo(other.gameObject, rocketLauncher, rocketLaunchPoint, "Picked up rockets");
-			}
-			if (other.gameObject.CompareTag ("GuidedRocketAmmo")) {
-				PickupAmmo(other.gameObject, guidedRocketLauncher, guidedRocketLaunchPoint, "Picked up guided rockets");
-			}
-			if (other.gameObject.CompareTag ("CaptureGunAmmo")) {
-				PickupAmmo(other.gameObject, captureGun, captureGunFirePoint, "Picked up capture darts");
-			}
-			if (other.gameObject.CompareTag ("LaserBattery")) {
-				PickupAmmo(other.gameObject, laser, laserFirePoint, "Picked up laser battery");
-			}
-			if (other.gameObject.CompareTag ("LaserGunPickup")) {
-				if (currentWeapons[3] == 0) {
-					currentWeapons[3] = 1;
+			if (other.gameObject.name.Contains ("LaserPickup")) {
+				if (currentWeapons[(int)WeaponType.Laser] == 0) {
+					currentWeapons[(int)WeaponType.Laser] = 1;
 					Destroy (other.gameObject);
 					gameController.SendMessage("SetTempText", "Picked up laser gun"); 
 					PlayerPrefs.SetInt ("hasLaser" + "_" + SceneManager.GetActiveScene ().name, currentWeapons[3]);
 				} else {
-					bool isActive = laser.activeSelf;
-					laser.SetActive (true);
-					laserFirePoint.SendMessage ("CollectAmmo", other.gameObject);
-					laser.SetActive (isActive);
-					SwitchWeapons (curWeapon, true, true);
+					bool isActive = weapons [WeaponType.Laser].activeSelf;
+					weapons [WeaponType.Laser].SetActive (true);
+					firePoints[WeaponType.Laser].SendMessage ("CollectAmmo", other.gameObject);
+					weapons [WeaponType.Laser].SetActive (isActive);
+					SwitchWeapons ((WeaponType)curWeapon, true, true);
 					gameController.SendMessage("SetTempText", "Picked up laser gun"); 
 				}
-			}
-			if (other.gameObject.CompareTag ("GuidedRocketLauncherPickup")) {
-				currentWeapons[5] = PickupWeapon(other.gameObject, guidedRocketLauncher, guidedRocketLaunchPoint, currentWeapons[5], "hasGuidedRocket", "Picked up guided rocket launcher", "Picked up guided rockets");
-
-			}
-			if (other.gameObject.CompareTag ("RocketLauncherPickup")) {
-				currentWeapons[4] = PickupWeapon(other.gameObject, rocketLauncher, rocketLaunchPoint, currentWeapons[4], "hasRocket", "Picked up rocket launcher", "Picked up rockets");
-
-			}
-			if (other.gameObject.CompareTag ("MachineGunPickup")) {
-				currentWeapons[2] = PickupWeapon(other.gameObject, gatlingGun, gatlingFirePoint, currentWeapons[2], "hasMachineGun", "Picked up machine gun", "Picked up machine gun ammo");
-
-			}
-			if (other.gameObject.CompareTag ("GrenadeLauncherPickup")) {
-				currentWeapons[1] = PickupWeapon(other.gameObject, grenadeLauncher, grenadeFirePoint, currentWeapons[1], "hasGrenadeLauncher", "Picked up grenade launcher", "Picked up grenades");
-			}
-			if (other.gameObject.CompareTag ("CaptureGunPickup")) {
-				currentWeapons[6] = PickupWeapon(other.gameObject, captureGun, captureGunFirePoint, currentWeapons[6], "hasCaptureGun", "Picked up capture gun", "Picked up capture darts");
 			}
 			if (other.gameObject.CompareTag ("Explosion")) {
 				ReduceHealth(5);
 				Destroy(other.gameObject);
 			}
-			if (other.gameObject.CompareTag ("HealthPack")) {
+			if (other.gameObject.name.Contains ("HealthPack")) {
 				if (health < 100)
 				{
 					Destroy(other.gameObject);
@@ -787,36 +696,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
 						health = 100;
 					}
 					ReduceHealth (0);
-					//GetComponent<AudioSource>().PlayOneShot(ammoPickup, 3.0F);
 					gameController.SendMessage("SetTempText", "Picked up health"); 
 				}
 			}
-			if (other.gameObject.CompareTag ("LevelMarker") && lastSaveTime < Time.time) {
-				laser.SetActive (true);
-				laserFirePoint.SendMessage ("SaveAmmo");
-				laser.SetActive (false);
-				grenadeLauncher.SetActive (true);
-				grenadeFirePoint.SendMessage ("SaveAmmo");
-				grenadeLauncher.SetActive (false);
-				rifle.SetActive (false);
-				gatlingGun.SetActive (true);
-				gatlingFirePoint.SendMessage ("SaveAmmo");
-				gatlingGun.SetActive (false);
-				rifle.SetActive (true);
-				rifleFirePoint.SendMessage ("SaveAmmo");
-				rifle.SetActive (false);
-				guidedRocketLauncher.SetActive (true);
-				guidedRocketLaunchPoint.SendMessage ("SaveAmmo");
-				guidedRocketLauncher.SetActive (false);
-				captureGun.SetActive (true);
-				captureGunFirePoint.SendMessage ("SaveAmmo");
-				captureGun.SetActive (false);
+			if (other.gameObject.name.Contains ("LevelMarker") && lastSaveTime < Time.time) {
+				foreach (WeaponType weapon in weapons.Keys) {
+					weapons [weapon].SetActive (true);
+					firePoints[weapon].SendMessage ("SaveAmmo");
+					weapons [weapon].SetActive (false);
+				}
+
 				//Save weapons
 				for (int i = 0; i < currentWeapons.Length; i++) {
 					PlayerPrefs.SetInt ("Weapon_" + i.ToString() + "_" + SceneManager.GetActiveScene ().name, currentWeapons[i]);
 				}
 				SavePrefs ();
-				SwitchWeapons (curWeapon, false, false);
+				SwitchWeapons ((WeaponType)curWeapon, false, false);
 				gameController.SendMessage ("SaveGame");
 				gameController.SendMessage("SetTempText", "Game Saved");
 				IncreaseHalth (20);
@@ -828,7 +723,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		void OnCollisionEnter(Collision other)
 		{
-			if (other.gameObject.tag.Contains ("Rocket")) {
+			if (other.gameObject.name.Contains ("Rocket")) {
 #if !MOBILE_INPUT
 				ReduceHealth(20);
 #else
@@ -840,7 +735,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 				ReduceHealth(5);
 				Destroy(other.gameObject);
 			}
-			if (other.gameObject.tag.Contains ("RifleBullet")) {
+			if (other.gameObject.name.Contains ("HighVelocityRound")) {
 #if !MOBILE_INPUT
 				ReduceHealth(5);
 #else
@@ -848,7 +743,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 #endif
 				Destroy(other.gameObject);
 			}
-			if (other.gameObject.tag.Contains ("Shell")) {
+			if (other.gameObject.name.Contains ("HighExplosiveRoun")) {
 #if !MOBILE_INPUT
 				ReduceHealth(10);
 #else

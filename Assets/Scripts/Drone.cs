@@ -161,7 +161,7 @@ public class Drone : MonoBehaviour {
 			if (Physics.Raycast (ray, out hit, secondaryRange)) {
 				//Only fire if target is in range
 				lastRaycast = hit.transform.tag;
-				if (hit.transform.CompareTag ("Crate") || hit.transform.CompareTag (target.tag)) {
+				if (hit.transform.name.Contains ("BreakableCube") || hit.transform.CompareTag (target.tag)) {
 					float dist = Vector3.Distance (target.position, transform.position);
 					if (dist < secondaryRange) {
 						GameObject blast_clone;
@@ -194,7 +194,7 @@ public class Drone : MonoBehaviour {
 			RaycastHit hit;
 			if (Physics.Raycast (ray, out hit, shotRange)) {
 				lastRaycast = hit.transform.tag;
-				if (hit.transform.CompareTag ("Crate") || hit.transform.CompareTag (target.tag)) {
+				if (hit.transform.name.Contains ("BreakableCube") || hit.transform.CompareTag (target.tag)) {
 					float dist = Vector3.Distance (target.position, transform.position);
 					if (dist < shotRange) {
 						GameObject blast_clone;

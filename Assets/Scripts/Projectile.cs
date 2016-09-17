@@ -49,7 +49,7 @@ public class Projectile : MonoBehaviour {
 		         other.gameObject.CompareTag ("Portal") || other.gameObject.CompareTag ("HeavyTurret") ||
 		         other.gameObject.CompareTag ("Turret") || other.gameObject.CompareTag ("TacticalDrone") ||
 		         other.gameObject.CompareTag ("AlliedTacticalDrone") || other.gameObject.CompareTag ("AlliedDrone") ||
-		         other.gameObject.CompareTag ("Crate") || other.gameObject.CompareTag ("DestroyableWall")) {
+			other.gameObject.name.Contains("BreakableCube") || other.gameObject.CompareTag ("DestroyableWall")) {
 			explode = true;
 			Destroy (gameObject);
 		}

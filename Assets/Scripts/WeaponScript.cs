@@ -64,7 +64,7 @@ public class WeaponScript : MonoBehaviour {
 			RaycastHit hit;
 			string text = "";
 			if (Physics.Raycast (ray, out hit, 9999)) {
-				if (hit.transform.CompareTag ("Crate")) {
+				if (hit.transform.name.Contains("BreakableCube")) {
 					text = hit.distance.ToString() + "\nAmmo Crate\nDestroyable";
 				} else if (hit.transform.CompareTag ("AlliedDrone")) {
 					text = hit.distance.ToString() + "\nAllied Drone\nDO NOT FIRE!";
@@ -193,79 +193,80 @@ public class WeaponScript : MonoBehaviour {
 		}
 	}
 
+	void FireWeapon()
+	{
+		if (ammo > 0 && nextFireTime < Time.time)
+		{
+			GameObject blast_clone;
 
+			if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode") && weaponName.Equals ("Capture Gun")) 
+			{
+
+			}
+			else
+			{
+				ammo--;
+			}
+			DisplayWeaponText();
+			Vector3 position = transform.position;
+			ParticleSystem system = GetComponent<ParticleSystem>();
+			if (system != null) {
+				system.Emit(1);
+			}
+			blast_clone = Instantiate(bullet, position, transform.rotation) as GameObject;
+			blast_clone.GetComponent<Rigidbody>().velocity = transform.forward * shotSpeed;
+			if (ammoDetonates)
+			{
+				blast_clone.GetComponent("Projectile").SendMessage("SetDetonation", detonation_time);
+			}
+			GameObject[] pointdefenses = GameObject.FindGameObjectsWithTag ("PointDefenseLaser");
+			foreach (GameObject point in pointdefenses)
+			{
+				point.SendMessage("AddIgnoreId", blast_clone.GetInstanceID());
+			}
+			nextFireTime = Time.time + maxRateOfFire;
+		}
+	}
+
+	bool is_holding_fire()
+	{
+		int ySelectionZone = Screen.height / 6;
+		int xSelectionZone = Screen.width / 4;
+		for (int i = 0; i < Input.touchCount; i++)
+		{
+			if (Input.GetTouch(i).position.y < ySelectionZone * 1 && Input.GetTouch(i).position.x > xSelectionZone)
+			{
+				return true;
+				//FireWeapon();
+			}
+		}
+		return false;
+	}
+
+	bool last_time_holding_fire = false;
 	// Update is called once per frame
 	void Update () {
 #if !MOBILE_INPUT
-		if (isFullAuto && Input.GetButton("Fire1") && gameObject.activeSelf && Time.timeScale == 1){
-#else
-		if (isFullAuto && CrossPlatformInputManager.GetButton("FireBtn") && gameObject.activeSelf && Time.timeScale == 1){
-#endif
-			if (ammo > 0 && nextFireTime < Time.time)
-			{
-				GameObject blast_clone;
-				if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode") && weaponName.Equals ("Capture Gun")) 
-				{
-					
-				}
-				else
-				{
-				   ammo--;
-				}
-				DisplayWeaponText();
-				Vector3 position = transform.position;
+		if (Input.GetButton("Fire1") && gameObject.activeSelf && Time.timeScale == 1){
+			FireWeapon();
 
-				ParticleSystem system = GetComponent<ParticleSystem>();
-				if (system != null) {
-					system.Emit(1);
-				}
-				blast_clone = Instantiate(bullet, position, transform.rotation) as GameObject;
-				blast_clone.GetComponent<Rigidbody>().velocity = transform.forward * shotSpeed;
-				nextFireTime = Time.time + maxRateOfFire; 
-				GameObject[] pointdefenses = GameObject.FindGameObjectsWithTag ("PointDefenseLaser");
-				foreach (GameObject point in pointdefenses)
-				{
-					point.SendMessage("AddIgnoreId", blast_clone.GetInstanceID());
-				}
-			}
 		}
-#if !MOBILE_INPUT
-		else if (Input.GetButton("Fire1") && gameObject.activeSelf && Time.timeScale == 1){
 #else
-		else if (CrossPlatformInputManager.GetButtonDown("FireBtn") && gameObject.activeSelf && Time.timeScale == 1){
-#endif
-			if (ammo > 0 && nextFireTime < Time.time)
-			{
-				GameObject blast_clone;
-
-				if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode") && weaponName.Equals ("Capture Gun")) 
-				{
-
-				}
-				else
-				{
-					ammo--;
-				}
-				DisplayWeaponText();
-				Vector3 position = transform.position;
-				ParticleSystem system = GetComponent<ParticleSystem>();
-				if (system != null) {
-					system.Emit(1);
-				}
-				blast_clone = Instantiate(bullet, position, transform.rotation) as GameObject;
-				blast_clone.GetComponent<Rigidbody>().velocity = transform.forward * shotSpeed;
-				if (ammoDetonates)
-				{
-				   blast_clone.GetComponent("Projectile").SendMessage("SetDetonation", detonation_time);
-				}
-				GameObject[] pointdefenses = GameObject.FindGameObjectsWithTag ("PointDefenseLaser");
-				foreach (GameObject point in pointdefenses)
-				{
-					point.SendMessage("AddIgnoreId", blast_clone.GetInstanceID());
-				}
-				nextFireTime = Time.time + maxRateOfFire;
-			}
+		if (isFullAuto && is_holding_fire())
+		{
+			FireWeapon();
 		}
+		else if (is_holding_fire() && !last_time_holding_fire)
+		{
+			FireWeapon();
+			last_time_holding_fire = true;
+		}
+		else if (!is_holding_fire() && last_time_holding_fire)
+		{
+			last_time_holding_fire = false;
+		}
+			
+#endif
 		if (ammoDetonates)
 		{
 		   if (Input.GetKeyDown (KeyCode.N)) {

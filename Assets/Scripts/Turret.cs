@@ -103,7 +103,7 @@ public class Turret : MonoBehaviour {
 			Ray ray = new Ray (transform.position, transform.forward);
 			RaycastHit hit;
 			if (Physics.Raycast (ray, out hit, shotRange)) {
-				if (hit.transform.CompareTag ("Crate") || hit.transform.CompareTag (target.tag)) {
+				if (hit.transform.name.Contains("BreakableCube") || hit.transform.CompareTag (target.tag)) {
 					float dist = Vector3.Distance (target.position, transform.position);
 					if (dist < shotRange) {
 						GameObject blast_clone;

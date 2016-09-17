@@ -54,6 +54,22 @@ public class Laser : MonoBehaviour {
 		PlayerPrefs.DeleteKey (SceneManager.GetActiveScene ().name + "_" + "batteryCharge");
 	}
 
+	bool is_holding_fire()
+	{
+		int ySelectionZone = Screen.height / 6;
+		int xSelectionZone = Screen.width / 4;
+		for (int i = 0; i < Input.touchCount; i++)
+		{
+			if (Input.GetTouch(i).position.y < ySelectionZone * 1 && Input.GetTouch(i).position.x > xSelectionZone)
+			{
+				return true;
+				//FireWeapon();
+			}
+		}
+		return false;
+	}
+
+
 	public void ScanTarget()
 	{
 		if (gameObject.activeSelf) {
@@ -61,7 +77,7 @@ public class Laser : MonoBehaviour {
 			RaycastHit hit;
 			string text = "";
 			if (Physics.Raycast (ray, out hit, 9999)) {
-				if (hit.transform.CompareTag ("Crate")) {
+				if (hit.transform.name.Contains ("BreakableCube")) {
 					text = "Ammo Crate\nDestroyable";
 				} else if (hit.transform.CompareTag ("AlliedDrone")) {
 					text = "Allied Drone\nDO NOT FIRE!";
@@ -184,9 +200,8 @@ public class Laser : MonoBehaviour {
 #if !MOBILE_INPUT
 		if (Input.GetButtonDown("Fire1") && gameObject.activeSelf && chargeTime < Time.time && charge > 0 && Time.timeScale == 1) {
 #else
-		if (CrossPlatformInputManager.GetButtonDown("FireBtn") && gameObject.activeSelf && chargeTime < Time.time && charge > 0 && Time.timeScale == 1){
+		if (is_holding_fire() && gameObject.activeSelf && chargeTime < Time.time && charge > 0 && Time.timeScale == 1){
 #endif
-			GetComponent<AudioSource> ().PlayOneShot (fireSound, 5.0F);
 			StopCoroutine ("FireLaser");
 			StartCoroutine ("FireLaser");
 		}
@@ -211,10 +226,9 @@ public class Laser : MonoBehaviour {
 #if !MOBILE_INPUT
 		while (Input.GetButton ("Fire1") && charge > 0 && gameObject.activeSelf)
 #else
-		while (CrossPlatformInputManager.GetButton("FireBtn") && charge > 0 && gameObject.activeSelf)
+		while (is_holding_fire() && charge > 0 && gameObject.activeSelf)
 #endif
 		{
-			//line.renderer.
 			float randomJump = Random.Range(-0.01F, 0.01F);
 			Vector3 positionNew = transform.position;
 			positionNew.x += randomJump;
@@ -224,7 +238,7 @@ public class Laser : MonoBehaviour {
 			if (Physics.Raycast (ray, out hit, 1000)) {
 				line.SetPosition (1, hit.point);
 				if (hit.rigidbody) {
-					if (hit.transform.CompareTag ("Crate") || hit.transform.CompareTag ("AttackDrone") ||
+					if (hit.transform.name.Contains ("BreakableCube") || hit.transform.CompareTag ("AttackDrone") ||
 						hit.transform.CompareTag ("Explodeable") || hit.transform.CompareTag("Portal")) {
 						hit.transform.SendMessage ("HitByLaser");
 					} else {

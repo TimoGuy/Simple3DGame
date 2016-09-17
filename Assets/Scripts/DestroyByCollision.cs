@@ -70,7 +70,7 @@ public class DestroyByCollision : MonoBehaviour {
 		int remove_value = 0;
 		int difficulty = PlayerPrefs.GetInt ("AILevel");
 
-		if (other.gameObject.CompareTag("CaptureDart")) {
+		if (other.gameObject.name.Contains("CaptureDart")) {
 			Destroy (other.gameObject);
 			if (CompareTag ("AttackDrone") || CompareTag("TacticalDrone")) {
 				Instantiate (AlliedDroneModel, transform.position, transform.rotation);
@@ -81,7 +81,7 @@ public class DestroyByCollision : MonoBehaviour {
 			}
 		}
 
-		if (other.gameObject.CompareTag("Grenade")) {
+		if (other.gameObject.name.Contains("Grenade")) {
 			if (difficulty == 0) {
 				remove_value = 30;
 			} else if (difficulty == 1) {
@@ -90,7 +90,7 @@ public class DestroyByCollision : MonoBehaviour {
 				remove_value = 15;
 			}
 		}
-		if (other.gameObject.CompareTag("Rocket")) {
+		if (other.gameObject.name.Contains("Rocket")) {
 			if (difficulty == 0) {
 				remove_value = 50;
 			} else if (difficulty == 1) {
@@ -99,7 +99,7 @@ public class DestroyByCollision : MonoBehaviour {
 				remove_value = 30;
 			}
 		}
-		if (other.gameObject.CompareTag ("RifleBullet")) {
+		if (other.gameObject.name.Contains ("HighVelocityRound")) {
 			if (difficulty == 0) {
 				remove_value = 8;
 			} else if (difficulty == 1) {
@@ -108,7 +108,7 @@ public class DestroyByCollision : MonoBehaviour {
 				remove_value = 4;
 			}
 		}
-		if (other.gameObject.CompareTag ("MachineGunBullet")) {
+		if (other.gameObject.name.Contains ("MachineGunBullet")) {
 			if (difficulty == 0) {
 				remove_value = 4;
 			} else if (difficulty == 1) {
