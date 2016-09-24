@@ -14,6 +14,8 @@ public class GameController : MonoBehaviour {
 	public GameObject AlliedDroneModel;
 	public GameObject TacticalDroneModel;
 	public GameObject AlliedTacticalDroneModel;
+	public GameObject HeavyDroneModel;
+	public GameObject HeavyAlliedDroneModel;
 	public GameObject GameOverOverlay;
 
 	private int battlecruiser_speed = 25;
@@ -42,9 +44,7 @@ public class GameController : MonoBehaviour {
 	private float default_drone_launch_time = 30;
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
-	//private bool waveLaunched = false;
-
-	private static string version = "1.3.2";
+	private static string version = "1.3.7";
 
 	// Use this for initialization
 	void Start () {
@@ -88,7 +88,8 @@ public class GameController : MonoBehaviour {
 			LoadGameObjects ();
 		} else {
 			most_battlecruisers_passed = SafeLoadPref ("mostCruisers", 0);
-			Invoke("LaunchCruiser", Random.Range(20.0F, 60.0F)); //Only launch battle cruisers in survival mode
+			Invoke("LaunchCruiser", Random.Range(40.0F, 70.0F)); //Only launch battle cruisers in survival mode
+			Invoke("LaunchHeavyDrone", Random.Range(10F, 20F));
 		}
 
 		InvokeRepeating ("WinCheck", Random.Range (5.0F, 10.0F), 5.0F);
@@ -209,10 +210,8 @@ public class GameController : MonoBehaviour {
 			objectString += objectPosition.x.ToString () + "," + objectPosition.y.ToString () + "," + objectPosition.z.ToString () + ",";
 			objectString += objectRotation.x.ToString () + "," + objectRotation.y.ToString () + "," + objectRotation.z.ToString () + ":";
 		}
-		//Debug.Log ("Saving String: " + tag + " length: " + objectString.Length);
 		PlayerPrefs.SetString (tag + "_" + SceneManager.GetActiveScene ().name, objectString);
 	}
-
 	/********************************************************
     * SAVE GAME
     * DESCRIPTION: Saves the current game data.
@@ -264,7 +263,6 @@ public class GameController : MonoBehaviour {
 		LoadGameObject("AttackDrone", AttackDroneModel);
 		LoadGameObject("Portal", portalModel);
 		LoadGameObject("AlliedDrone", AlliedDroneModel);
-		//("BattleCruiser", battleCruiserObject);
 		LoadGameObject("HeavyTurret", heavyTurretObject);
 		LoadGameObject("Turret", turretObject);
 		LoadGameObject("TacticalDrone", TacticalDroneModel);
@@ -281,7 +279,6 @@ public class GameController : MonoBehaviour {
 		SaveGameObject ("Portal");
 		SaveGameObject ("AttackDrone");
 		SaveGameObject ("AlliedDrone");
-		//SaveGameObject ("BattleCruiser");
 		SaveGameObject ("HeavyTurret");
 		SaveGameObject ("Turret");
 		SaveGameObject ("TacticalDrone");
@@ -548,6 +545,22 @@ public class GameController : MonoBehaviour {
 			if (cruiserLaunchTime > 30) {
 				cruiserLaunchTime -= 10;
 			}
+		}
+	}
+
+	/*****************************************************
+    * PRINT DOUBLE DIGITS
+    * DESCRIPTION: Launches a battle cruiser and handles the increase
+    * of battlecruisers.
+    *****************************************************/
+	private void LaunchHeavyDrone()
+	{
+		GameObject[] destinations = GameObject.FindGameObjectsWithTag ("SpawnPoint");
+		Vector3 spawnPoint = new Vector3 (Random.Range(-100, 150), Random.Range(35, 60), Random.Range(800, 1000));
+		if (destinations.Length > 0) {
+			int destination = Random.Range (0, destinations.Length - 1); //Randomize the start/end points
+			GameObject heavyDrone = Instantiate (HeavyDroneModel, spawnPoint, destinations [destination].transform.rotation) as GameObject;
+			Invoke("LaunchHeavyDrone", Random.Range(120F, 180F));
 		}
 	}
 

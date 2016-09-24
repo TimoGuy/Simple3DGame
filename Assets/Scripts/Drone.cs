@@ -110,6 +110,7 @@ public class Drone : MonoBehaviour {
 			start_dist = AquireTarget ("Turret", start_dist);
 			start_dist = AquireTarget ("HeavyTurret", start_dist);
 			start_dist = AquireTarget ("BattleCruiser", start_dist);
+			start_dist = AquireTarget ("HeavyDrone", start_dist);
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				start_dist = AquireTarget ("Portal", start_dist);
 			}
@@ -119,6 +120,7 @@ public class Drone : MonoBehaviour {
 			start_dist = Vector3.Distance (target.position, transform.position);
 			start_dist = AquireTarget ("AlliedDrone", start_dist);
 			start_dist = AquireTarget ("AlliedTacticalDrone", start_dist);
+			start_dist = AquireTarget ("HeavyAlliedDrone", start_dist);
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				start_dist = AquireTarget ("AlliedPortal", start_dist);
 			}

@@ -27,6 +27,36 @@
 * the health pack to also use the name instead of the tag. Removed the tag from the level marker.
 * Modified all bullets to be identified by name (not tag). Removed the tag from all crates, now
 * accessing with just the name.
+* Update: 9/19/2016, Reved Sphere Crusher to version 1.3.3. Removed the remaining tags from the game
+* except for tags on allied and enemy units (these must be handled seperatly). Fixed an issue where
+* guided missiles were not doing any damage to targets. Fixed an issue where jump wasn't working
+* on mobile platforms. Fixed an issue where new game objects were spawning on exit.
+* Update: 9/21/2016, Reved Sphere Crusher to version 1.3.4 Fixed an issue where explosions were
+* not affecting the player. Added the new plasma rifle and plasma explosion. Added the barrel 
+* flash special effect to the machine gun and rifle. Fixed an issue where there was no explosion
+* assigned to one of the battle cruiser's point defenses. Modified the guided rocket to only explode
+* on contact, not just when it is close. Added barrel flashes to each weapon type. Fixed an issue
+* where WeaponType.None was being accessed. Increased rocket rate of fire. Added code that allows
+* the rocket to randomly select a target.
+* Update: 9/22/2016, Modified the bullet explosion to be smaller with less particals and a
+* more accurate special effect. Modified the machine gun round and rifle round to no longer
+* be affected by gravity as these objects would appear to be like that in real life. Fixed an issue
+* where explosions were being 'eaten' by the target game object. Preformed a minor refactor on the
+* DestroyByCollision script. Now we detect implicitly weather an object is to be spawned based on
+* if that object is null or not. This eliminates the need for checkboxes in the script. Added sound
+* to the plasma cannon. Added plasma cannon ammo packs.
+* Update: 9/23/2016, Reved to version 1.3.6, Preformed a major refactor of the guided rocket
+* script. Fixed an issue where the laser was not making any sound when firing. Added the plasma launcher
+* gun pickup. Added the plasma gun pickup item to the game SurvivalMode in a hidden place. Combinde
+* the Laser Script into the Weapon script. Now only one weapon script is require for all weapons. There
+* is no longer a specal case for lasers. Fixed a few issues with the object identification system (HUD). Also
+* added the plasma launcher to the HUD.
+* Update: 9/24/2016, Reved to version 1.3.7, Increased the speed of the drones and first person controller
+* to be more responsive. Decreasesed the rifle ROF slightly but increased how powerful each shot is. Now a single
+* rifle shot can destroy a drone. Added a new unit to the game, the HeavyDrone. This unit fills the gap between the
+* battlecruiser and the tactical drone. Added code to launch the heavy drone regularly. Reduced the power of the
+* explosions. Fixed an issue where ammo counts were staying the same. Added the heavy drone to the HUD. Doubled the 
+* health pack value.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -62,7 +92,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
         [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
 
-		public enum WeaponType { None=-1, Rifle=0, GrenadeLauncher=1, MachineGun=2, Laser=3, RocketLauncher=4, GuidedMissileLauncher=5, CaptureGun=6};
+		public enum WeaponType { None=-1, Rifle=0, GrenadeLauncher=1, MachineGun=2, Laser=3, RocketLauncher=4, GuidedMissileLauncher=5, CaptureGun=6, PlasmaLauncher=7};
         private Camera m_Camera;
         private bool m_Jump;
         private float m_YRotation;
@@ -207,6 +237,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         ********************************************/
 		private void LoadWeapons()
 		{
+			//weapons.Add (WeaponType.None, null);
+			//firePoints.Add (WeaponType.None, null);
 			weapons.Add (WeaponType.Rifle, GameObject.Find ("FirstPersonCharacter/Rifle"));
 			firePoints.Add(WeaponType.Rifle, GameObject.Find ("FirstPersonCharacter/Rifle/RifleFirePoint"));
 			weapons.Add(WeaponType.GrenadeLauncher, GameObject.Find ("FirstPersonCharacter/GrenadeLauncher"));
@@ -221,6 +253,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			firePoints.Add(WeaponType.CaptureGun, GameObject.Find ("FirstPersonCharacter/DroneCaptureRifle/LaunchPoint"));
 			weapons.Add(WeaponType.MachineGun, GameObject.Find ("FirstPersonCharacter/MachineGun"));
 			firePoints.Add(WeaponType.MachineGun, GameObject.Find ("FirstPersonCharacter/MachineGun/MachineGunFirePoint"));
+			weapons.Add(WeaponType.PlasmaLauncher, GameObject.Find("FirstPersonCharacter/PlasmaLauncher"));
+			firePoints.Add(WeaponType.PlasmaLauncher, GameObject.Find("FirstPersonCharacter/PlasmaLauncher/PlasmaFirePoint"));
 			gameController = GameObject.FindGameObjectWithTag ("GameController");
 
 		}
@@ -290,7 +324,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					lives--;
 					if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 						gameController.SendMessage ("GameOver");
-						SwitchWeapons (WeaponType.None, false, false); //deactivate weapons
+						//SwitchWeapons (WeaponType.None, false, false); //deactivate weapons
 						gameOver = true;
 						Invoke ("LoadMainMenu", 5.0F);
 
@@ -308,7 +342,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					{
 						gameController.SendMessage ("SetDefaults");
 						gameController.SendMessage ("GameOver");
-						SwitchWeapons (WeaponType.None, false, false); //deactivate weapons
+						//SwitchWeapons (WeaponType.None, false, false); //deactivate weapons
 						Invoke ("LoadMainMenu", 5.0F);
 						gameOver = true;
 						ClearWeaponSaves ();
@@ -418,7 +452,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // the jump state needs to read here to make sure it is not missed
             if (!m_Jump)
             {
-#if MOBILE_INTPUT
+#if MOBILE_INPUT
 				m_Jump = pressed_jump_area ();
 #else
 				m_Jump = CrossPlatformInputManager.GetButton("Jump");
@@ -566,6 +600,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // On standalone builds, walk/run speed is modified by a key press.
             // keep track of whether or not the character is walking or running
             m_IsWalking = !Input.GetKey(KeyCode.LeftShift);
+#else
+			m_IsWalking = false; //Always run on mobile platforms
 #endif
             // set the desired speed to be walking or running
             speed = m_IsWalking ? m_WalkSpeed : m_RunSpeed;
@@ -667,6 +703,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					break;
 				}
 			}
+			if (other.gameObject.name.Contains ("ExplosionPlasma")) {
+				ReduceHealth (15);
+			}
+			if (other.gameObject.name.Contains ("ExplosionLarge")) {
+				ReduceHealth(5);
+			}
+			if (other.gameObject.name.Contains ("ExplosionMassive")) {
+				ReduceHealth(10);
+			}
 			if (other.gameObject.name.Contains ("LaserPickup")) {
 				if (currentWeapons[(int)WeaponType.Laser] == 0) {
 					currentWeapons[(int)WeaponType.Laser] = 1;
@@ -682,15 +727,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					gameController.SendMessage("SetTempText", "Picked up laser gun"); 
 				}
 			}
-			if (other.gameObject.CompareTag ("Explosion")) {
-				ReduceHealth(5);
-				Destroy(other.gameObject);
-			}
 			if (other.gameObject.name.Contains ("HealthPack")) {
 				if (health < 100)
 				{
 					Destroy(other.gameObject);
-					health += 10;
+					health += 20;
 					if (health > 100)
 					{
 						health = 100;
@@ -729,10 +770,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 #else
 				ReduceHealth(10);
 #endif
-				Destroy(other.gameObject);
-			}
-			if (other.gameObject.tag.Contains ("Explosion")) {
-				ReduceHealth(5);
 				Destroy(other.gameObject);
 			}
 			if (other.gameObject.name.Contains ("HighVelocityRound")) {

@@ -29,6 +29,7 @@ public class Projectile : MonoBehaviour {
 	}
 
 	void OnDestroy() {
+		
 		if (explode) {
 			Rigidbody rb = GetComponent<Rigidbody> ();
 			Instantiate (explosion, rb.position, rb.rotation);
@@ -45,15 +46,14 @@ public class Projectile : MonoBehaviour {
 		if (explodeOnContact) {
 			explode = true;
 			Destroy (gameObject);
-		} else if (other.gameObject.CompareTag ("AttackDrone") || other.gameObject.CompareTag ("BattleCruiser") ||
+		} else if (other.gameObject.name.Contains ("AttackDrone") || other.gameObject.CompareTag ("BattleCruiser") ||
 		         other.gameObject.CompareTag ("Portal") || other.gameObject.CompareTag ("HeavyTurret") ||
 		         other.gameObject.CompareTag ("Turret") || other.gameObject.CompareTag ("TacticalDrone") ||
-		         other.gameObject.CompareTag ("AlliedTacticalDrone") || other.gameObject.CompareTag ("AlliedDrone") ||
-			other.gameObject.name.Contains("BreakableCube") || other.gameObject.CompareTag ("DestroyableWall")) {
+			other.gameObject.name.Contains ("TacticalAlliedDrone") || other.gameObject.name.Contains ("AlliedDrone") || other.gameObject.name.Contains("HeavyDrone") ||
+			other.gameObject.name.Contains("BreakableCube") || other.gameObject.name.Contains("HeavyAlliedDrone") || other.gameObject.name.Contains ("BreakableWall")) {
 			explode = true;
 			Destroy (gameObject);
 		}
-
 	}
 
 	public void HitByPointDefense()

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 
@@ -9,29 +10,18 @@ public class DestroyByCollision : MonoBehaviour {
 	public bool DestroyOnGroundContact;
 	public bool DetectLaserHits;
 	public bool destroyAllDrones;
-	public bool spawnRockets;
-	public bool spawnGuidedRockets;
-	public bool spawnLaserBatteries;
-	public bool spawnCaptureGunPack;
-
-	public bool SpawnNewOnDeath;
 	public int SpawnCount;
-	public GameObject spawnObject;
-
-	public bool SpawnAmmoOnDeath;
-	public GameObject MachineGunAmmo;
-	public GameObject RifleAmmo;
-	public GameObject GrenadeAmmo;
-	public GameObject LaserBatteries;
-	public GameObject RocketPack;
-	public GameObject GuidedRocketPack;
-	public GameObject AlliedDroneModel;
-	public GameObject captureGunPack;
-
-	public bool SpawnHealthOnDeath;
-	public GameObject HealthPack;
-
-	public bool IncreaseHealthOnDeath;
+	public bool spawn_ammo = false;
+	public GameObject spawnObject = null;
+	public GameObject MachineGunAmmo = null;
+	public GameObject RifleAmmo = null;
+	public GameObject GrenadeAmmo = null;
+	public GameObject LaserBatteries = null;
+	public GameObject RocketPack = null;
+	public GameObject GuidedRocketPack = null;
+	public GameObject AlliedDroneModel = null;
+	public GameObject captureGunPack = null;
+	public GameObject HealthPack = null;
 	public int HealthIncreaseAmmount;
 
 	public int ScoreValue;
@@ -65,6 +55,7 @@ public class DestroyByCollision : MonoBehaviour {
 		}
 		iterations_laser_hit++;
 	}
+
 	void OnCollisionEnter(Collision other)
 	{
 		int remove_value = 0;
@@ -72,7 +63,7 @@ public class DestroyByCollision : MonoBehaviour {
 
 		if (other.gameObject.name.Contains("CaptureDart")) {
 			Destroy (other.gameObject);
-			if (CompareTag ("AttackDrone") || CompareTag("TacticalDrone")) {
+			if (name.Contains("AttackDrone") || CompareTag("TacticalDrone") || name.Contains("HeavyDrone")) {
 				Instantiate (AlliedDroneModel, transform.position, transform.rotation);
 				objectWillExplode = false;
 				Destroy (gameObject);
@@ -90,7 +81,7 @@ public class DestroyByCollision : MonoBehaviour {
 				remove_value = 15;
 			}
 		}
-		if (other.gameObject.name.Contains("Rocket")) {
+		if (other.gameObject.name.Contains("Rocket") || other.gameObject.name.Contains("Missile")) {
 			if (difficulty == 0) {
 				remove_value = 50;
 			} else if (difficulty == 1) {
@@ -101,11 +92,11 @@ public class DestroyByCollision : MonoBehaviour {
 		}
 		if (other.gameObject.name.Contains ("HighVelocityRound")) {
 			if (difficulty == 0) {
-				remove_value = 8;
+				remove_value = 14;
 			} else if (difficulty == 1) {
-				remove_value = 6;
+				remove_value = 8;
 			} else {
-				remove_value = 4;
+				remove_value = 6;
 			}
 		}
 		if (other.gameObject.name.Contains ("MachineGunBullet")) {
@@ -117,6 +108,17 @@ public class DestroyByCollision : MonoBehaviour {
 				remove_value = 2;
 			}
 		}
+
+		if (other.gameObject.name.Contains ("PlasmaBall")) {
+			if (difficulty == 0) {
+				remove_value = 80;
+			} else if (difficulty == 1) {
+				remove_value = 70;
+			} else {
+				remove_value = 60;
+			}
+		}
+
 		if ((gameObject.CompareTag ("Portal") || CompareTag ("AlliedPortal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 			remove_value = 0;
 		}
@@ -140,22 +142,32 @@ public class DestroyByCollision : MonoBehaviour {
 
 		if ((gameObject.CompareTag ("Portal") || CompareTag ("AlliedPortal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
 		{
-				return;
+			return;
 		}
-		if (other.gameObject.CompareTag ("Explosion")) {
+		if (other.gameObject.name.Contains ("ExplosionPlasma")) {
+			health -= 40;
+		}
+		if (other.gameObject.name.Contains ("ExplosionLarge")) {
+			health -= 10;
+		}
+		if (other.gameObject.name.Contains ("ExplosionMassive")) {
 			health -= 20;
-			if (health < 0)
-			{
-				objectWillExplode = true;
-				Destroy (gameObject);
-			}
 		}
-		
+		if (health < 0)
+		{
+			objectWillExplode = true;
+			Destroy (gameObject);
+		}
 	}
 
 	public void SetExplode()
 	{
 		objectWillExplode = true;
+	}
+
+	void OnApplicationQuit()
+	{
+		objectWillExplode = false;
 	}
 
 	void OnDestroy() {
@@ -164,23 +176,23 @@ public class DestroyByCollision : MonoBehaviour {
 			Vector3 newPosition = rb.position;
 			//Object explosion
 			Instantiate (explosion, rb.position, rb.rotation);
-			if (controller == null) {
+			if (controller == null || gameController == null) {
 				return;
 			}
 			//Allied units don't add score
-			if (!CompareTag ("AlliedDrone") && !CompareTag ("AlliedTacticalDrone") && !CompareTag("AlliedPortal") && health < 0) {
+			if (!name.Contains ("AlliedDrone") && !name.Contains ("TacticalAlliedDrone") && !name.Contains("AlliedPortal") && health < 0) {
 				gameController.SendMessage ("AddToScore", ScoreValue);
 			}
-			//Increase player health on death
-			if (CompareTag("AttackDrone") || CompareTag("TacticalDrone")) {
+			//Destroy the enemy drones
+			if (name.Contains("AttackDrone") || name.Contains("TacticalDrone")) {
 				gameController.SendMessage ("DroneDestroyed");
 			}
-			if (IncreaseHealthOnDeath)
+			if (HealthIncreaseAmmount > 0)
 			{
 				controller.GetComponent ("FirstPersonController").SendMessage ("IncreaseHalth", HealthIncreaseAmmount);
 			}
 			//Spawn New objects on death
-			if (SpawnNewOnDeath)
+			if (spawnObject != null)
 			{
 				newPosition.y += 12;
 				for (int i = 0; i < SpawnCount; i++)
@@ -188,28 +200,26 @@ public class DestroyByCollision : MonoBehaviour {
 					Instantiate (spawnObject, newPosition, rb.rotation);
 				}
 			}
-			//Ammo pack is created when this object is destroyed
-			if (SpawnAmmoOnDeath)
-			{
+			if (spawn_ammo) {
 				int value = Random.Range (1, 13);
 				if (value == 3 && MachineGunAmmo != null) {
 					Instantiate (MachineGunAmmo, newPosition, rb.rotation);
 				} else if (value == 4 && GrenadeAmmo != null) {
 					Instantiate (GrenadeAmmo, newPosition, rb.rotation);
-				} else if (value == 5 && spawnLaserBatteries && LaserBatteries != null) {
+				} else if (value == 5 && LaserBatteries != null) {
 					Instantiate (LaserBatteries, newPosition, rb.rotation);
-				} else if (value == 6 && spawnRockets && RocketPack != null) {
+				} else if (value == 6 && RocketPack != null) {
 					Instantiate (RocketPack, newPosition, rb.rotation);
-				} else if (value == 7 && spawnGuidedRockets && GuidedRocketPack != null) {
+				} else if (value == 7 && GuidedRocketPack != null) {
 					Instantiate (GuidedRocketPack, newPosition, rb.rotation);
-				} else if (value == 8 && spawnCaptureGunPack && captureGunPack != null) {
+				} else if (value == 8 && captureGunPack != null) {
 					Instantiate (captureGunPack, newPosition, rb.rotation);
-				} else if (value == 9 || value == 10 || value == 11 || value == 12) {
+				} else if (RifleAmmo != null && value == 9 || value == 10 || value == 11 || value == 12) {
 					Instantiate (RifleAmmo, newPosition, rb.rotation);
 				}
 			}
 			//Health is randomly spawned on death
-			if (SpawnHealthOnDeath)
+		    if (HealthPack != null)
 			{
 				int value = Random.Range (1, 6);
 				if (value != 2)

@@ -12,29 +12,33 @@ public class WeaponScript : MonoBehaviour {
 	public bool isFullAuto;
 	public bool ammoDetonates;
 	public GameObject bullet;
+	public GameObject barrelFlash;
+	public GameObject sparks;
 	public int DefaultAmmo;
+	public AudioClip ammoPickup;
+	public bool isLaser = false;
+	public AudioClip fireSound;
 	private int ammo;
 	private float detonation_time;
-	private float temporaryTextTime;
-	private bool notActive;
 	private float nextFireTime;
 	private bool ammo_pulled = false;
-	public AudioClip ammoPickup;
 	private AudioSource m_AudioSource;
-
+	private LineRenderer line;
+	private int charge;
 	private GameObject gameController;
 
 	void Start () {
-		ParticleSystem system = GetComponent<ParticleSystem>();
 		m_AudioSource = GetComponent<AudioSource>();
-		if (system != null) {
-			system.Pause ();
-		}
 		gameController = GameObject.FindGameObjectWithTag ("GameController");
+		if (isLaser) {
+			line = gameObject.GetComponent<LineRenderer> ();
+			line.enabled = false;
+			charge = 100;
+			//firing = false;
+		}
 		nextFireTime = 0;
 		detonation_time = 5;
 		GetAmmoLevel ();
-		//Invoke ("DisplayWeaponText", 0.5F);
 		InvokeRepeating ("ScanTarget", Random.Range(0.5F, 1.0F), 0.5F);
 	}
 
@@ -66,13 +70,13 @@ public class WeaponScript : MonoBehaviour {
 			if (Physics.Raycast (ray, out hit, 9999)) {
 				if (hit.transform.name.Contains("BreakableCube")) {
 					text = hit.distance.ToString() + "\nAmmo Crate\nDestroyable";
-				} else if (hit.transform.CompareTag ("AlliedDrone")) {
+				} else if (hit.transform.name.Contains ("AlliedDrone")) {
 					text = hit.distance.ToString() + "\nAllied Drone\nDO NOT FIRE!";
 				}
 				else if (hit.transform.CompareTag ("AlliedPortal")) {
 					text = hit.distance.ToString() + "\nAllied Portal\nDO NOT FIRE!";
 				}
-				else if (hit.transform.CompareTag ("AttackDrone")) {
+				else if (hit.transform.name.Contains ("AttackDrone")) {
 					text = hit.distance.ToString() + "\nAttack Drone\nDestroy with\nExtreme Prejudice";
 				}
 				else if (hit.transform.CompareTag ("BattleCruiser")) {
@@ -87,11 +91,14 @@ public class WeaponScript : MonoBehaviour {
 				else if (hit.transform.CompareTag ("Portal")) {
 					text = hit.distance.ToString() + "\nPortal\nWARNING\nDestroy before more\nDrones come through!";
 				}
-				//else if (hit.transform.CompareTag ("RocketTurret")) {
-				//	text = "Rocket Turret\nWARNING\nDestroy before it can fire!";
-				//}
-				else if (hit.transform.CompareTag ("AlliedTacticalDrone")) {
+				else if (hit.transform.name.Contains ("TacticalAlliedDrone")) {
 					text = hit.distance.ToString() + "\nAllied Tactical Drone\nDO NOT FIRE!";
+				}
+				else if (hit.transform.name.Contains ("HeavyDrone")) {
+					text = hit.distance.ToString() + "\nHeavy Drone\nDANGER!\nDrone is heavily armed!";
+				}
+				else if (hit.transform.name.Contains ("HeavyAlliedDrone")) {
+					text = hit.distance.ToString() + "\nAllied Heavy Drone\nDO NOT FIRE!";
 				}
 				else if (hit.transform.CompareTag ("TacticalDrone")) {
 					text = hit.distance.ToString() + "\nTactical Drone\nWARNING\nDestroy with\nExtreme Prejudice";
@@ -99,32 +106,35 @@ public class WeaponScript : MonoBehaviour {
 				else if (hit.transform.CompareTag ("Turret")) {
 					text = hit.distance.ToString() + "\nTurret\nWARNING\nDestroy with\nExtreme Prejudice";
 				}
-				else if (hit.transform.CompareTag ("LevelMarker")) {
+				else if (hit.transform.name.Contains ("LevelMarker")) {
 					text = "Level Marker\nWalk through\nThis to save\tthe game";
 				}
-				else if (hit.transform.CompareTag ("DestroyableWall")) {
+				else if (hit.transform.name.Contains ("BreakableWall")) {
 					text = hit.distance.ToString() + "\nWall is destroyable";
 				}
-				else if (hit.transform.CompareTag ("CaptureGunPickup")) {
+				else if (hit.transform.name.Contains ("CaptureGunPickup")) {
 					text = hit.distance.ToString() + "\nCapture Gun\nPick this up\nAnd you can\nCapture enemy drones";
 				}
-				else if (hit.transform.CompareTag ("GrenadeLauncherPickup")) {
+				else if (hit.transform.name.Contains ("GrenadeLauncherPickup")) {
 					text = hit.distance.ToString() + "\nGrenade Launcher\nPick this up\nto fire grenades\n";
 				}
-				else if (hit.transform.CompareTag ("HealthPack")) {
+				else if (hit.transform.name.Contains ("HealthPack")) {
 					text = hit.distance.ToString() + "\nHealth Pack\nPick this up\nto gain more\nhealth";
 				}
-				else if (hit.transform.CompareTag ("LaserGunPickup")) {
+				else if (hit.transform.name.Contains ("LaserPickup")) {
 					text = hit.distance.ToString() + "\nLaser Gun\nPick this up\nto fire a\ndirected energy\nbeam at targets";
 				}
-				else if (hit.transform.CompareTag ("MachineGunPickup")) {
+				else if (hit.transform.name.Contains ("MachineGunPickup")) {
 					text = hit.distance.ToString() + "\nMachine Gun\nPick this up\nto fire bullets\nrapidly at targets";
 				}
-				else if (hit.transform.CompareTag ("RocketLauncherPickup")) {
+				else if (hit.transform.name.Contains("RocketLauncherPickup")) {
 					text = hit.distance.ToString() + "\nRocket Launcher\nPick this up\nto fire rockets\nat targets";
 				}
-				else if (hit.transform.CompareTag ("GuidedRocketLauncherPickup")) {
+				else if (hit.transform.name.Contains ("GuidedMissileLauncherPickup")) {
 					text = hit.distance.ToString() + "\nGuided Rocket Launcher\nPick this up\nto fire guided rockets\nat targets";
+				}
+				else if (hit.transform.name.Contains ("PlasmaLauncherPickup")) {
+					text = hit.distance.ToString() + "\nPlasma Launcher\nPick this up\nto fire plasma rockets\nat targets";
 				}
 				else if (hit.transform.CompareTag ("RocketTurret")) {
 					text = hit.distance.ToString() + "\nRocket Turret\nWARNING\nLaunches guided rockets\nAt targets";
@@ -172,46 +182,66 @@ public class WeaponScript : MonoBehaviour {
 
 	public void CollectAmmo(GameObject ammoPack)
 	{
-		GetAmmoLevel ();
-		Destroy(ammoPack.gameObject);
-		ammo+=ammoPackValue;
-		DisplayWeaponText();
+		if (isLaser) {
+			if (ammoPack.name.Contains ("LaserAmmo")) {
+				GetAmmoLevel ();
+				if (ammo < 10000) {
+					ammo += 500;
+					Destroy (ammoPack);
+					DisplayWeaponText ();
+				}
+			}
+		} else {
+			GetAmmoLevel ();
+			Destroy (ammoPack.gameObject);
+			ammo += ammoPackValue;
+			DisplayWeaponText ();
+		}
 	}
 
 	void DisplayWeaponText()
 	{
-		string weaponText = "Weapon: " + weaponName + "\n";
-		weaponText += "Ammo: " + ammo.ToString() + "\n";
-		if (ammoDetonates) {
-			weaponText += "Detonation Time: " + detonation_time.ToString ();
-		}
+		if (isLaser) {
+			string weaponText = "Weapon: Laser\n";
+			weaponText = "Weapon: Laser" + "\n";
+			weaponText += "Battery: " + ammo.ToString () + "kwh\n";
+			weaponText += "Charge: " + charge.ToString () + "%";
+			if (gameController != null) {
+				gameController.SendMessage ("SetWeaponText", weaponText);
+			}
+		} else {
+			string weaponText = "Weapon: " + weaponName + "\n";
+			weaponText += "Ammo: " + ammo.ToString () + "\n";
+			if (ammoDetonates) {
+				weaponText += "Detonation Time: " + detonation_time.ToString ();
+			}
 #if !MOBILE_INPUT
-		weaponText += "('b' to switch)";
+			weaponText += "('b' to switch)";
 #endif
-		if (gameController != null) {
-			gameController.SendMessage ("SetWeaponText", weaponText);
+			if (gameController != null) {
+				gameController.SendMessage ("SetWeaponText", weaponText);
+			}
 		}
 	}
 
 	void FireWeapon()
 	{
-		if (ammo > 0 && nextFireTime < Time.time)
+		if (isLaser && !line.enabled && nextFireTime < Time.time && charge > 0) {
+			StopCoroutine ("FireLaser");
+			StartCoroutine ("FireLaser");
+		}
+		else if (!isLaser && ammo > 0 && nextFireTime < Time.time)
 		{
 			GameObject blast_clone;
+			if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode") && weaponName.Equals ("Capture Gun")) {
 
-			if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode") && weaponName.Equals ("Capture Gun")) 
-			{
-
-			}
-			else
-			{
+			} else {
 				ammo--;
 			}
 			DisplayWeaponText();
 			Vector3 position = transform.position;
-			ParticleSystem system = GetComponent<ParticleSystem>();
-			if (system != null) {
-				system.Emit(1);
+			if (barrelFlash != null) {
+				Instantiate(barrelFlash, position, transform.rotation);
 			}
 			blast_clone = Instantiate(bullet, position, transform.rotation) as GameObject;
 			blast_clone.GetComponent<Rigidbody>().velocity = transform.forward * shotSpeed;
@@ -237,13 +267,13 @@ public class WeaponScript : MonoBehaviour {
 			if (Input.GetTouch(i).position.y < ySelectionZone * 1 && Input.GetTouch(i).position.x > xSelectionZone)
 			{
 				return true;
-				//FireWeapon();
 			}
 		}
 		return false;
 	}
-
+#if MOBILE_INPUT
 	bool last_time_holding_fire = false;
+#endif
 	// Update is called once per frame
 	void Update () {
 #if !MOBILE_INPUT
@@ -285,6 +315,58 @@ public class WeaponScript : MonoBehaviour {
 			  }
 		   }
 		}
+		if (isLaser) {
+			if (charge < 100 && line.enabled == false) {
+				if (ammo > 0) {
+					charge++;
+					ammo--;
+					DisplayWeaponText();
+				}
+			}
+		}
+	}
+
+	IEnumerator FireLaser()
+	{
+		line.enabled = true;
+		//firing = true;
+		m_AudioSource.PlayOneShot (fireSound);
+#if !MOBILE_INPUT
+		while (Input.GetButton ("Fire1") && charge > 0 && gameObject.activeSelf)
+#else
+		while (is_holding_fire() && charge > 0 && gameObject.activeSelf)
+#endif
+		{
+			float randomJump = Random.Range(-0.01F, 0.01F);
+			Vector3 positionNew = transform.position;
+			positionNew.x += randomJump;
+			Ray ray = new Ray (positionNew, transform.forward);
+			RaycastHit hit;
+			line.SetPosition (0, ray.origin);
+			if (Physics.Raycast (ray, out hit, 1000)) {
+				line.SetPosition (1, hit.point);
+				if (hit.rigidbody) {
+					if (hit.transform.name.Contains ("BreakableCube") || hit.transform.name.Contains ("AttackDrone") ||
+						hit.transform.name.Contains("TargetSphere") || hit.transform.CompareTag("Portal") ||
+						hit.transform.name.Contains("TacticalDrone")) {
+						hit.transform.SendMessage ("HitByLaser");
+					} else {
+						hit.rigidbody.AddForceAtPosition (transform.forward * 100, hit.point);
+					}
+					Instantiate (sparks, hit.point, hit.transform.rotation);
+				}
+			} else {		
+				line.SetPosition (1, ray.GetPoint (1000));
+			}
+			charge--;
+			DisplayWeaponText ();
+			yield return null;
+		}
+		line.enabled = false;
+		if (charge == 0) {
+			nextFireTime = Time.time + 1.0F;
+		}
+		line.enabled = false;
 	}
 
 }
