@@ -57,6 +57,14 @@
 * battlecruiser and the tactical drone. Added code to launch the heavy drone regularly. Reduced the power of the
 * explosions. Fixed an issue where ammo counts were staying the same. Added the heavy drone to the HUD. Doubled the 
 * health pack value.
+* Update: 9/26-9/27/2016, Reved to version 1.3.8, Started adding the carrier unit. This is the heaviest unit in the game
+* capable of untold damage. Improved the rocket launch script to handle various modes. Finished the carrier AI unit.
+* Fixed an issue where the battlecruiser, heavy drone and carrier were are not affected by the laser. Added more intellegance
+* to the guided rockets so they don't get stuck circiling their target. Modified the game controller to launch the battle cruiser
+* on strictly a random basis. Added the evil guided rocket to the target list as well as the guided rocket. Now rockets can hit each other.
+* Added the carrier to the game controller. Decreased rifle pack value. Increased the capture gun pack value. Fixed an issue
+* where the enemy point defenses were not working. Added a new script that will eventually delete ammo packs after a designated
+* time frame. Disabled the 'FallAgain' script code.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;

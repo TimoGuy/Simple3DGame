@@ -7,6 +7,7 @@ public class Turret : MonoBehaviour {
 
 	public bool fire_on_no_ally_block = false;
 	public bool find_random_target = false;
+	public bool no_aim = false;
 	public float targetingSpeed;
 	public float shotVelocity;
 	public float easyROF;
@@ -142,33 +143,41 @@ public class Turret : MonoBehaviour {
 
 	void FireAtTarget()
 	{
-		if (target != null) {
+		RaycastHit hit;
+		bool allyInTheWay = false;
+		bool fire = false;
+		if (target != null && !no_aim) {
 			Ray ray = new Ray (transform.position, transform.forward);
-			RaycastHit hit;
-			bool allyInTheWay = false;
 			if (Physics.Raycast (ray, out hit, shotRange)) {
 				foreach (string ally in allyList) {
 					if (hit.transform.CompareTag (ally)) {
 						allyInTheWay = true;
 					}
 				}
-				if ((!fire_on_no_ally_block && hit.transform.name.Contains("BreakableCube") || hit.transform.CompareTag (target.tag)) ||
-					(fire_on_no_ally_block && !allyInTheWay)) {
+				if ((hit.transform.name.Contains ("BreakableCube") || hit.transform.CompareTag (target.tag)) && !allyInTheWay) {
 					float dist = Vector3.Distance (target.position, transform.position);
-					if (dist < shotRange) {
-						GameObject blast_clone;
-						Vector3 position = transform.position;
-						position = transform.position + transform.forward * forwardOffset;
-						blast_clone = Instantiate (bullet, position, transform.rotation) as GameObject;
-						blast_clone.GetComponent<Rigidbody> ().velocity = transform.forward * shotVelocity;
+					if (dist < shotRange || fire_on_no_ally_block) {
+						fire = true;
 					}
 				}
 			}
+		} else if (no_aim) {
+			fire = true;
 		}
+		if (fire) {
+			GameObject blast_clone;
+			Vector3 position = transform.position;
+			position = transform.position + transform.forward * forwardOffset;
+			blast_clone = Instantiate (bullet, position, transform.rotation) as GameObject;
+			blast_clone.GetComponent<Rigidbody> ().velocity = transform.forward * shotVelocity;
+		}
+
 	}
 
 	// Update is called once per frame
 	void Update () {
-		 transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * targetingSpeed);
+		if (!no_aim) {
+			transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * targetingSpeed);
+		}
 	}
 }

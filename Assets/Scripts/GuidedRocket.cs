@@ -8,12 +8,14 @@ public class GuidedRocket : MonoBehaviour {
 	Quaternion look;
 	Rigidbody rb;
 	public bool isAllied;
+	private bool guided = true;
 	// Use this for initialization
 	void Start () {
 		rb = GetComponent<Rigidbody> ();
-		Invoke ("Detonate", 60.0F);
+		Invoke ("Detonate", 180.0F);
 		FindTarget ();
 		InvokeRepeating ("FindTarget", 5.0F, 5.0F);
+		Invoke ("toggleGuidedMode", Random.Range (8, 12));
 	}
     
 	/*********************************************************
@@ -55,11 +57,14 @@ public class GuidedRocket : MonoBehaviour {
 				targetList.Add ("BattleCruiser");
 				targetList.Add ("TacticalDrone");
 				targetList.Add ("HeavyDrone");
+				targetList.Add ("Carrier");
+				targetList.Add ("RocketEvil");
 			} else {
 				targetList.Add ("Player");
 				targetList.Add ("AlliedDrone");
 				targetList.Add ("AlliedTacticalDrone");
 				targetList.Add ("HeavyAlliedDrone");
+				targetList.Add ("GoodRocket");
 			}
 			Ray ray = new Ray (transform.position, transform.forward);
 			RaycastHit hit;
@@ -76,14 +81,37 @@ public class GuidedRocket : MonoBehaviour {
 		}
 	}
 
+	/***********************************************************
+    * TOGGLE GUIDED MODE
+    * DESCRIPTION: If the rocket gets stuck going around and around
+    * this will periodically break the loop and allow the rocket to
+    * re-approach the target.
+    ***********************************************************/
+	void toggleGuidedMode()
+	{
+		if (guided)
+		{
+			guided = false;
+			Invoke ("toggleGuidedMode", Random.Range (1.5F, 3F));
+		}
+		else
+		{
+			guided = true;
+			Invoke ("toggleGuidedMode", Random.Range (8F, 12F));
+		}
+	}
+
 	/*********************************************************
     * UPDATE
     *********************************************************/
 	void Update () {
-		if (target != null) {
+		if (target != null && guided) {
 			look = Quaternion.LookRotation (target.transform.position - transform.position);
 			transform.rotation = Quaternion.Slerp (transform.rotation, look, Time.deltaTime * 2.0F);
 			rb.velocity = transform.forward * 80;
+		} else if (target != null && !guided) {
+			rb.velocity = transform.forward * 80;
 		}
+			
 	}
 }

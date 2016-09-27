@@ -25,7 +25,6 @@ public class DestroyByCollision : MonoBehaviour {
 	public int HealthIncreaseAmmount;
 
 	public int ScoreValue;
-	public int iterations_laser_hit = 0;
 	public GameObject explosion;
 	
 	private bool objectWillExplode;
@@ -47,13 +46,11 @@ public class DestroyByCollision : MonoBehaviour {
 		}
 		if (DetectLaserHits) {
 			health--;
-			iterations_laser_hit = 0;
 			if (health < 0) {
 				objectWillExplode = true;
 				Destroy (gameObject);
 			}
 		}
-		iterations_laser_hit++;
 	}
 
 	void OnCollisionEnter(Collision other)

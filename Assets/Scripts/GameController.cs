@@ -17,6 +17,7 @@ public class GameController : MonoBehaviour {
 	public GameObject HeavyDroneModel;
 	public GameObject HeavyAlliedDroneModel;
 	public GameObject GameOverOverlay;
+	public GameObject carrierModel;
 
 	private int battlecruiser_speed = 25;
 	private bool endGuyBuilt = false;
@@ -26,7 +27,7 @@ public class GameController : MonoBehaviour {
 	private int dronesCreated = 0;
 	private int alliedDronesCreated = 0;
 	private float droneLaunchTime = 20;
-	private float cruiserLaunchTime = 300.0F;
+	//private float cruiserLaunchTime = 300.0F;
 	private UnityEngine.UI.Text hudText;
 	private UnityEngine.UI.Text temporaryText;
 	private UnityEngine.UI.Text weaponText;
@@ -44,7 +45,7 @@ public class GameController : MonoBehaviour {
 	private float default_drone_launch_time = 30;
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
-	private static string version = "1.3.7";
+	private static string version = "1.3.8";
 
 	// Use this for initialization
 	void Start () {
@@ -52,17 +53,17 @@ public class GameController : MonoBehaviour {
 		if (difficulty == 0) {
 			default_drone_launch_time = 45;
 			droneLaunchTime = 30;
-			cruiserLaunchTime = 200;
+			//cruiserLaunchTime = 200;
 			tactical_drone_launch_bound = 20;
 		} else if (difficulty == 1) {
 			default_drone_launch_time = 30;
 			droneLaunchTime = 20;
-			cruiserLaunchTime = 180;
+			//cruiserLaunchTime = 180;
 			tactical_drone_launch_bound = 10;
 		} else {
 			default_drone_launch_time = 20;
 			droneLaunchTime = 15;
-			cruiserLaunchTime = 120;
+			//cruiserLaunchTime = 120;
 			tactical_drone_launch_bound = 5;
 		}
 		damageImage = GameObject.Find ("DamageImage").GetComponent<Image> ();
@@ -526,25 +527,27 @@ public class GameController : MonoBehaviour {
 		GameObject[] destinations = GameObject.FindGameObjectsWithTag ("SpawnPoint");
 		Vector3 spawnPoint = new Vector3 (Random.Range(-100, 150), Random.Range(35, 60), Random.Range(800, 1000));
 		if (destinations.Length > 0) {
+			GameObject cruiser;
 			int destination = Random.Range (0, destinations.Length - 1); //Randomize the start/end points
-			GameObject cruiser = Instantiate (battleCruiserObject, spawnPoint, destinations [destination].transform.rotation) as GameObject;
-			cruiser.SendMessage ("SetSpeed", battlecruiser_speed);
-			if (battlecruiser_speed > 7) {
-				battlecruiser_speed--;
+			if ((cruisers_launched % 4) == 0 && cruisers_launched > 0) {
+				Instantiate (carrierModel, spawnPoint, destinations [destination].transform.rotation);
+			} else {
+				cruiser = Instantiate (battleCruiserObject, spawnPoint, destinations [destination].transform.rotation) as GameObject;
+				cruiser.SendMessage ("SetSpeed", battlecruiser_speed);
+				if (battlecruiser_speed > 7) {
+					battlecruiser_speed--;
+				}
+				if ((cruisers_launched % 3) == 0 && cruisers_launched > 0) {
+					cruiser.SendMessage ("TargetPlayer");
+				}
+				if (cruisers_launched > most_battlecruisers_passed) {
+					most_battlecruisers_passed = cruisers_launched;
+					PlayerPrefs.SetInt ("mostCruisers" + "_" + SceneManager.GetActiveScene ().name, most_battlecruisers_passed);
+					PlayerPrefs.Save ();
+				}
+				cruisers_launched++;
 			}
-			if ((cruisers_launched % 3) == 0 && cruisers_launched > 0) {
-				 cruiser.SendMessage ("TargetPlayer");
-			}
-			if (cruisers_launched > most_battlecruisers_passed) {
-				most_battlecruisers_passed = cruisers_launched;
-				PlayerPrefs.SetInt ("mostCruisers" + "_" + SceneManager.GetActiveScene ().name, most_battlecruisers_passed);
-				PlayerPrefs.Save ();
-			}
-			cruisers_launched++;
-			Invoke ("LaunchCruiser", cruiserLaunchTime);
-			if (cruiserLaunchTime > 30) {
-				cruiserLaunchTime -= 10;
-			}
+			Invoke ("LaunchCruiser", Random.Range(60, 180));
 		}
 	}
 
@@ -559,7 +562,7 @@ public class GameController : MonoBehaviour {
 		Vector3 spawnPoint = new Vector3 (Random.Range(-100, 150), Random.Range(35, 60), Random.Range(800, 1000));
 		if (destinations.Length > 0) {
 			int destination = Random.Range (0, destinations.Length - 1); //Randomize the start/end points
-			GameObject heavyDrone = Instantiate (HeavyDroneModel, spawnPoint, destinations [destination].transform.rotation) as GameObject;
+			Instantiate (HeavyDroneModel, spawnPoint, destinations [destination].transform.rotation);
 			Invoke("LaunchHeavyDrone", Random.Range(120F, 180F));
 		}
 	}
@@ -570,7 +573,6 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	public void AddToScore(int value)
 	{
-		scoreValue += value;
 		if (scoreValue > highScore) {
 			highScore = scoreValue;
 			PlayerPrefs.SetFloat ("HighScore", highScore);

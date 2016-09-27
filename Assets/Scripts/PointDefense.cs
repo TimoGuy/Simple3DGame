@@ -33,10 +33,10 @@ public class PointDefense : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if (firing == false) {
-			GameObject[] rockets = GameObject.FindGameObjectsWithTag ("Rocket");
+			GameObject[] rockets = GameObject.FindGameObjectsWithTag ("GoodRocket");
 			foreach (GameObject enemyDrone in rockets) {
 				//Rocket must not be on the same team as the point defense to be a valid target
-				if (!ignoreRocket(enemyDrone.GetInstanceID()) && Vector3.Distance (enemyDrone.transform.position, transform.position) < 30) {
+				if (Vector3.Distance (enemyDrone.transform.position, transform.position) < 30) {
 					transform.LookAt (enemyDrone.transform.position);
 					target = enemyDrone;
 					StartCoroutine ("FirePointBeam");

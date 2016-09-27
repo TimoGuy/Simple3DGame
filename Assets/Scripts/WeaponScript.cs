@@ -94,6 +94,9 @@ public class WeaponScript : MonoBehaviour {
 				else if (hit.transform.name.Contains ("TacticalAlliedDrone")) {
 					text = hit.distance.ToString() + "\nAllied Tactical Drone\nDO NOT FIRE!";
 				}
+				else if (hit.transform.name.Contains ("Carrier")) {
+					text = hit.distance.ToString() + "\nEnemy Carrier\nHeavily armed unit\nCaution!!";
+				}
 				else if (hit.transform.name.Contains ("HeavyDrone")) {
 					text = hit.distance.ToString() + "\nHeavy Drone\nDANGER!\nDrone is heavily armed!";
 				}
@@ -348,7 +351,8 @@ public class WeaponScript : MonoBehaviour {
 				if (hit.rigidbody) {
 					if (hit.transform.name.Contains ("BreakableCube") || hit.transform.name.Contains ("AttackDrone") ||
 						hit.transform.name.Contains("TargetSphere") || hit.transform.CompareTag("Portal") ||
-						hit.transform.name.Contains("TacticalDrone")) {
+						hit.transform.name.Contains("TacticalDrone") || hit.transform.name.Contains("HeavyDrone") ||
+						hit.transform.name.Contains("Carrier") || hit.transform.name.Contains("BattleCruiser")) {
 						hit.transform.SendMessage ("HitByLaser");
 					} else {
 						hit.rigidbody.AddForceAtPosition (transform.forward * 100, hit.point);

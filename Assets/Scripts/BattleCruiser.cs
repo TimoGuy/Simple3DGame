@@ -10,7 +10,6 @@ public class BattleCruiser : MonoBehaviour {
 	private Transform target;
 	private float speed = 3;
 	private UnityStandardAssets.Characters.FirstPerson.FirstPersonController controller;
-	public GameObject rocketModel;
 	private int droneCount = 0;
 	private Vector3 standoffPosition;
 	// Use this for initialization
@@ -70,13 +69,13 @@ public class BattleCruiser : MonoBehaviour {
 	private void LaunchNextDrone()
 	{
 		Vector3 droneLaunchPoint = transform.position;
+		int difficulty = PlayerPrefs.GetInt ("AILevel");
 		droneLaunchPoint.y -= 5;
 		if (droneCount == 4) {
 			Instantiate (tacticalDrone, droneLaunchPoint, transform.rotation);
 		} else {
 			Instantiate (droneModel, droneLaunchPoint, transform.rotation);
 		}
-		int difficulty = PlayerPrefs.GetInt ("AILevel");
 		droneCount++;
 		if (droneCount == 5) {
 			droneCount = 0;
