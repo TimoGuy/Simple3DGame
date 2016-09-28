@@ -43,29 +43,33 @@ public class Turret : MonoBehaviour {
 		targetList = new List<string> ();
 		allyList = new List<string> ();
 		if (isAllied) {
-			targetList.Add ("AttackDrone");
-			targetList.Add ("Turret");
-			targetList.Add ("TacticalDrone");
-			targetList.Add ("HeavyTurret");
-			targetList.Add ("BattleCruiser");
-			targetList.Add ("HeavyDrone");
+			//targetList.Add ("AttackDrone");
+			//targetList.Add ("Turret");
+			//targetList.Add ("TacticalDrone");
+			//targetList.Add ("HeavyTurret");
+			//t/argetList.Add ("BattleCruiser");
+			//targetList.Add ("HeavyDrone");
+			targetList.Add("EnemyUnit");
 			allyList.Add ("Player");
-			allyList.Add ("AlliedDrone");
-			allyList.Add ("AlliedTacticalDrone");
-			allyList.Add ("HeavyAlliedDrone");
+			allyList.Add ("AlliedUnit");
+			//allyList.Add ("AlliedDrone");
+			//allyList.Add ("AlliedTacticalDrone");
+			//allyList.Add ("HeavyAlliedDrone");
 
 				
 		} else {
 			targetList.Add ("Player");
-			targetList.Add ("AlliedDrone");
-			targetList.Add ("AlliedTacticalDrone");
-			targetList.Add ("HeavyAlliedDrone");
-			allyList.Add ("AttackDrone");
-			allyList.Add ("Turret");
-			allyList.Add ("TacticalDrone");
-			allyList.Add ("HeavyTurret");
-			allyList.Add ("BattleCruiser");
-			allyList.Add ("HeavyDrone");
+			targetList.Add ("AlliedUnit");
+			//targetList.Add ("AlliedDrone");
+			//targetList.Add ("AlliedTacticalDrone");
+			//targetList.Add ("HeavyAlliedDrone");
+			//allyList.Add ("AttackDrone");
+			//a//llyList.Add ("Turret");
+			//allyList.Add ("TacticalDrone");
+			//allyList.Add ("HeavyTurret");
+			//allyList.Add ("BattleCruiser");
+			//allyList.Add ("HeavyDrone");
+			allyList.Add("EnemyUnit");
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				targetList.Add ("AlliedPortal");
 			}

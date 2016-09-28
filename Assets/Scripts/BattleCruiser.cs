@@ -19,6 +19,7 @@ public class BattleCruiser : MonoBehaviour {
 		if (destinations.Length > 0) {
 			int destination = Random.Range (0, destinations.Length - 1);
 			target = destinations [destination].transform;
+			GetComponent<Rigidbody>().velocity = transform.forward * 5;
 			InvokeRepeating ("DropCrate", Random.Range (5.00F, 10.0F), 5.0F); 
 
 		} else {
@@ -26,6 +27,7 @@ public class BattleCruiser : MonoBehaviour {
 		}
 		standoffPosition = target.position;
 		standoffPosition.y = transform.position.y;
+
 		Invoke ("StartDroneWave", Random.Range (1.00F, 5.0F)); 
 	}
 
@@ -98,9 +100,9 @@ public class BattleCruiser : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		float step = speed * Time.deltaTime;
-		standoffPosition = target.position;
-		standoffPosition.y = transform.position.y;
-		transform.position = Vector3.MoveTowards (transform.position, standoffPosition, step);
+			float step = speed * Time.deltaTime;
+			standoffPosition = target.position;
+			standoffPosition.y = transform.position.y;
+			transform.position = Vector3.MoveTowards (transform.position, standoffPosition, step);
 	}
 }

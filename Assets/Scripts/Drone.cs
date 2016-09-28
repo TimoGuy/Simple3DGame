@@ -62,7 +62,6 @@ public class Drone : MonoBehaviour {
 
 		InvokeRepeating ("AquireTargets", Random.Range(0.1F, 1.0F), 10.0F);
 		if (isTactical) {
-			//InvokeRepeating ("FireSecondaryAtTarget", Random.Range (1.0F, 3.0F), 1.0F);
 			Invoke("FireAtTarget", Random.Range(0.5F, 1.0F));
 		} else {
 			InvokeRepeating ("FireAtTarget", Random.Range (1.0F, 3.0F), rateOfFire);
@@ -86,12 +85,11 @@ public class Drone : MonoBehaviour {
     *************************************************************/
 	float AquireTarget(string tag, float start_dist)
 	{
-		//First target enemy drones
-		GameObject[] enemyDrones = GameObject.FindGameObjectsWithTag (tag);
-		foreach (GameObject enemyDrone in enemyDrones) {
-			if (Vector3.Distance (enemyDrone.transform.position, transform.position) < start_dist && !isInvalid(enemyDrone.transform)) {
-				target = enemyDrone.transform;
-				start_dist = Vector3.Distance (enemyDrone.transform.position, transform.position);
+		GameObject[] targetList = GameObject.FindGameObjectsWithTag (tag);
+		foreach (GameObject targetUnit in targetList) {
+			if (!targetUnit.name.Contains("Rocket") && !targetUnit.name.Contains("Missile") && Vector3.Distance (targetUnit.transform.position, transform.position) < start_dist && !isInvalid(targetUnit.transform)) {
+				target = targetUnit.transform;
+				start_dist = Vector3.Distance (targetUnit.transform.position, transform.position);
 			}
 		}
 		return start_dist;
@@ -105,22 +103,15 @@ public class Drone : MonoBehaviour {
 	{
 		float start_dist = 10000.0F;
 		if (isAllied) {
-			start_dist = AquireTarget ("AttackDrone", start_dist);
-			start_dist = AquireTarget ("TacticalDrone", start_dist);
-			start_dist = AquireTarget ("Turret", start_dist);
-			start_dist = AquireTarget ("HeavyTurret", start_dist);
-			start_dist = AquireTarget ("BattleCruiser", start_dist);
-			start_dist = AquireTarget ("HeavyDrone", start_dist);
+			start_dist = AquireTarget ("EnemyUnit", start_dist);
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				start_dist = AquireTarget ("Portal", start_dist);
 			}
 
 		} else {
-			target = GameObject.FindGameObjectWithTag ("Player").transform;//GameObject.FindObjectOfType<UnityStandardAssets.Characters.FirstPerson.FirstPersonController> ().transform;
+			target = GameObject.FindGameObjectWithTag ("Player").transform;
 			start_dist = Vector3.Distance (target.position, transform.position);
-			start_dist = AquireTarget ("AlliedDrone", start_dist);
-			start_dist = AquireTarget ("AlliedTacticalDrone", start_dist);
-			start_dist = AquireTarget ("HeavyAlliedDrone", start_dist);
+			start_dist = AquireTarget ("AlliedUnit", start_dist);
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				start_dist = AquireTarget ("AlliedPortal", start_dist);
 			}
@@ -154,6 +145,20 @@ public class Drone : MonoBehaviour {
 		}
 	}
 
+	bool Fire(GameObject active_bullet, float max_range, float position_offset, float shot_speed)
+	{
+		float dist = Vector3.Distance (target.position, transform.position);
+		if (dist < max_range) {
+			GameObject shot;
+			Vector3 position = transform.position;
+			position = transform.position + transform.forward * position_offset;
+			shot = Instantiate (active_bullet, position, transform.rotation) as GameObject;
+			shot.GetComponent<Rigidbody> ().velocity = transform.forward * shot_speed;
+			return true;
+		}
+		return false;
+	}
+
 	void FireSecondaryAtTarget()
 	{
 		if (target != null) {
@@ -164,15 +169,7 @@ public class Drone : MonoBehaviour {
 				//Only fire if target is in range
 				lastRaycast = hit.transform.tag;
 				if (hit.transform.name.Contains ("BreakableCube") || hit.transform.CompareTag (target.tag)) {
-					float dist = Vector3.Distance (target.position, transform.position);
-					if (dist < secondaryRange) {
-						GameObject blast_clone;
-						Vector3 position = transform.position;
-						position = transform.position + transform.forward * 15;// + transform.right * 5;
-						//position = transform.position + transform.right * 5;
-						blast_clone = Instantiate (secondary, position, transform.rotation) as GameObject;
-						blast_clone.GetComponent<Rigidbody> ().velocity = transform.forward * 80;	
-					}
+					Fire(secondary, secondaryRange, 15.0F, 80F);
 				} else {
 					attempted_fires++;
 					if (attempted_fires == 10) {
@@ -183,6 +180,7 @@ public class Drone : MonoBehaviour {
 			}
 		}
 	}
+
 	/*************************************************************
     * FIRE AT TARGET
     * DESCRIPTION: Fires a shot at the selected target object.
@@ -197,15 +195,7 @@ public class Drone : MonoBehaviour {
 			if (Physics.Raycast (ray, out hit, shotRange)) {
 				lastRaycast = hit.transform.tag;
 				if (hit.transform.name.Contains ("BreakableCube") || hit.transform.CompareTag (target.tag)) {
-					float dist = Vector3.Distance (target.position, transform.position);
-					if (dist < shotRange) {
-						GameObject blast_clone;
-						Vector3 position = transform.position;
-						position = transform.position + transform.forward * shotOffset;
-						blast_clone = Instantiate (bullet, position, transform.rotation) as GameObject;
-						blast_clone.GetComponent<Rigidbody> ().velocity = transform.forward * shotSpeed;
-						fired = true;
-					}
+					fired = Fire (bullet, shotRange, shotOffset, shotSpeed);
 				} else {
 					attempted_fires++;
 					if (attempted_fires == 10) {

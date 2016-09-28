@@ -53,17 +53,14 @@ public class GameController : MonoBehaviour {
 		if (difficulty == 0) {
 			default_drone_launch_time = 45;
 			droneLaunchTime = 30;
-			//cruiserLaunchTime = 200;
 			tactical_drone_launch_bound = 20;
 		} else if (difficulty == 1) {
 			default_drone_launch_time = 30;
 			droneLaunchTime = 20;
-			//cruiserLaunchTime = 180;
 			tactical_drone_launch_bound = 10;
 		} else {
 			default_drone_launch_time = 20;
 			droneLaunchTime = 15;
-			//cruiserLaunchTime = 120;
 			tactical_drone_launch_bound = 5;
 		}
 		damageImage = GameObject.Find ("DamageImage").GetComponent<Image> ();
@@ -208,6 +205,7 @@ public class GameController : MonoBehaviour {
 		foreach (GameObject saveObject in objectsToSave) {
 			Vector3 objectPosition = saveObject.transform.position;
 			Vector3 objectRotation = saveObject.transform.eulerAngles;
+			objectString += saveObject.name + ",";
 			objectString += objectPosition.x.ToString () + "," + objectPosition.y.ToString () + "," + objectPosition.z.ToString () + ",";
 			objectString += objectRotation.x.ToString () + "," + objectRotation.y.ToString () + "," + objectRotation.z.ToString () + ":";
 		}
@@ -228,11 +226,11 @@ public class GameController : MonoBehaviour {
     * DESCRIPTION: Loads game objects from the data string
     * in the preferences file.
     *****************************************************/
-	private void LoadGameObject(string tag, GameObject loadModel)
+	private void LoadGameObject(string tag)
 	{
 		string objectString = SafeLoadPref (tag, "");
 		string[] objectStrings = objectString.Split (':');
-		int count = 0;
+		//int count = 0;
 
 		if (objectStrings.Length > 1) { //We have saved game objects stored, so we can proceed
 			GameObject[] currentObjects = GameObject.FindGameObjectsWithTag (tag);
@@ -244,11 +242,30 @@ public class GameController : MonoBehaviour {
 			foreach (string stringData in objectStrings) {
 				string[] dataPoints = stringData.Split (',');
 				//Each object must have 6 data points to be reconstituded
-				if (dataPoints.Length == 6) {
-					Vector3 objectPosition = new Vector3 (float.Parse (dataPoints [0]), float.Parse (dataPoints [1]), float.Parse (dataPoints [2]));
-					GameObject newPorthole = Instantiate (loadModel, objectPosition, transform.rotation) as GameObject;
-					newPorthole.transform.eulerAngles = new Vector3 (float.Parse (dataPoints [3]), float.Parse (dataPoints [4]), float.Parse (dataPoints [5]));
-					count++;
+				if (dataPoints.Length == 7) {
+					string objectName = dataPoints [0];
+					Vector3 objectPosition = new Vector3 (float.Parse (dataPoints [1]), float.Parse (dataPoints [2]), float.Parse (dataPoints [3]));
+					GameObject loadModel = null;
+					if (tag == "AlliedUnit" || tag == "Portal") {
+						if (objectName.Contains ("TacticalDrone")) {
+							loadModel = TacticalDroneModel;
+						} else if (objectName.Contains ("Drone")) {
+							loadModel = AttackDroneModel;
+						} else if (objectName.Contains ("Portal")) {
+							loadModel = portalModel;
+						}
+					} else {
+						if (objectName.Contains ("TacticalAlliedDrone")) {
+							loadModel = AlliedTacticalDroneModel;
+						} else if (objectName.Contains ("Drone")) {
+							loadModel = AlliedDroneModel;
+						} 
+					}
+					if (loadModel != null) {
+						GameObject newPorthole = Instantiate (loadModel, objectPosition, transform.rotation) as GameObject;
+						newPorthole.transform.eulerAngles = new Vector3 (float.Parse (dataPoints [4]), float.Parse (dataPoints [5]), float.Parse (dataPoints [6]));
+						//count++;
+					}
 				}
 			}
 		}
@@ -261,13 +278,9 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	public void LoadGameObjects()
 	{
-		LoadGameObject("AttackDrone", AttackDroneModel);
-		LoadGameObject("Portal", portalModel);
-		LoadGameObject("AlliedDrone", AlliedDroneModel);
-		LoadGameObject("HeavyTurret", heavyTurretObject);
-		LoadGameObject("Turret", turretObject);
-		LoadGameObject("TacticalDrone", TacticalDroneModel);
-		LoadGameObject("AlliedTacticalDrone", AlliedTacticalDroneModel);
+		LoadGameObject("EnemyUnit");
+		LoadGameObject("AlliedUnit");
+		LoadGameObject("Portal");
 	}
 
 	/*****************************************************
@@ -277,13 +290,9 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	public void SaveGameObjects()
 	{
+		SaveGameObject ("AlliedUnit");
+		SaveGameObject ("EnemyUnit");
 		SaveGameObject ("Portal");
-		SaveGameObject ("AttackDrone");
-		SaveGameObject ("AlliedDrone");
-		SaveGameObject ("HeavyTurret");
-		SaveGameObject ("Turret");
-		SaveGameObject ("TacticalDrone");
-		SaveGameObject ("AlliedTacticalDrone");
 	}
 
 	/*****************************************************
@@ -298,11 +307,19 @@ public class GameController : MonoBehaviour {
 			endGuyBuilt = true;
 			Instantiate (battleCruiserObject, battleCruiserSpawnPoint.transform.position, battleCruiserSpawnPoint.transform.rotation);
 		}
-		else if (GameObject.FindGameObjectsWithTag ("BattleCruiser").Length <= 0 && endGuyBuilt == true)
+		else if (endGuyBuilt == true)
 		{
-			SetTempText("Victory!");
-			GameObject.FindGameObjectWithTag ("Player").SendMessage ("ClearFirstPersonController");
-			Invoke ("EndGame", 3.0F);
+			bool win = true;
+			foreach (GameObject unit in GameObject.FindGameObjectsWithTag ("EnemyUnit")) {
+				if (unit.name.Contains ("BattleCruiser")) {
+					win = false;
+				}
+			}
+			if (win) {
+				SetTempText ("Victory!");
+				GameObject.FindGameObjectWithTag ("Player").SendMessage ("ClearFirstPersonController");
+				Invoke ("EndGame", 3.0F);
+			}
 		}
 	}
 
@@ -356,17 +373,17 @@ public class GameController : MonoBehaviour {
     *****************************************************/
 	private void DisplayStatusText()
 	{
-		int numDrones = GameObject.FindGameObjectsWithTag ("AttackDrone").Length;
+		int enemyUnits = GameObject.FindGameObjectsWithTag ("EnemyUnit").Length;
 		int numPortholes = GameObject.FindGameObjectsWithTag ("Portal").Length;
-		int numTacticalDrones = GameObject.FindGameObjectsWithTag ("TacticalDrone").Length;
+		int numTacticalDrones = GameObject.FindGameObjectsWithTag ("AlliedUnit").Length;
 		hudText.text = "Ver: " + version;
 		hudText.text += "\nTime: " + PrintDoubleDigits(gameTimeHours) + ":" + PrintDoubleDigits(gameTimeMinutes) + ":" + PrintDoubleDigits(gameTimeSeconds);
 		hudText.text += "\nScore: " + scoreValue.ToString () + " (High: " + highScore.ToString () + ")";
 		if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 			hudText.text += "\nCruisers Launched: " + cruisers_launched.ToString () + " Most: " + most_battlecruisers_passed.ToString();
 		}
-		hudText.text += "\nDrones: " + numDrones.ToString ();
-		hudText.text += "\nTactical: " + numTacticalDrones.ToString();
+		hudText.text += "\nEnemies: " + enemyUnits.ToString ();
+		hudText.text += "\nAllies: " + numTacticalDrones.ToString();
 		hudText.text += "\nDestroyed: " + numDronesDestroyed.ToString ();
 		hudText.text += "\nPortals: " + numPortholes.ToString ();
 	}
@@ -382,7 +399,6 @@ public class GameController : MonoBehaviour {
 		}
 		health = inputHealth;
 		health_bar.value = health;
-		//healthText.text = "Lives: " + lives.ToString ();
 	}
 
 	/*****************************************************
@@ -436,7 +452,6 @@ public class GameController : MonoBehaviour {
 			PlayerPrefs.SetInt ("timeMin" + "_" + SceneManager.GetActiveScene ().name, gameTimeMinutes);
 			PlayerPrefs.SetInt ("timeSec" + "_" + SceneManager.GetActiveScene ().name, gameTimeSeconds);
 			PlayerPrefs.SetInt ("timeHour" + "_" + SceneManager.GetActiveScene ().name, gameTimeHours);
-			SaveGameObject ("AttackDrone");
 		}
 	}
 
@@ -547,7 +562,7 @@ public class GameController : MonoBehaviour {
 				}
 				cruisers_launched++;
 			}
-			Invoke ("LaunchCruiser", Random.Range(60, 180));
+			Invoke ("LaunchCruiser", Random.Range(180, 210));
 		}
 	}
 

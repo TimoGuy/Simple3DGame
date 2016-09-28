@@ -36,6 +36,12 @@ public class Projectile : MonoBehaviour {
 		}
 	}
 
+	void OnApplicationQuit()
+	{
+		explode = false;
+		explodeOnContact = false;
+	}
+
 	public void SetExplodeOnContact()
 	{
 		explodeOnContact = true;
@@ -46,12 +52,8 @@ public class Projectile : MonoBehaviour {
 		if (explodeOnContact) {
 			explode = true;
 			Destroy (gameObject);
-		} else if (other.gameObject.name.Contains ("AttackDrone") || other.gameObject.CompareTag ("BattleCruiser") ||
-		         other.gameObject.CompareTag ("Portal") || other.gameObject.CompareTag ("HeavyTurret") ||
-		         other.gameObject.CompareTag ("Turret") || other.gameObject.CompareTag ("TacticalDrone") ||
-			other.gameObject.name.Contains ("TacticalAlliedDrone") || other.gameObject.name.Contains ("AlliedDrone") || other.gameObject.name.Contains("HeavyDrone") ||
-			other.gameObject.name.Contains("BreakableCube") || other.gameObject.name.Contains("HeavyAlliedDrone") || other.gameObject.name.Contains ("BreakableWall") ||
-			other.gameObject.name.Contains("Carrier")) {
+		} else if (other.gameObject.name.Contains ("EnemyUnit") || other.gameObject.CompareTag ("AlliedUnit") ||
+			other.gameObject.CompareTag("Player")) {
 			explode = true;
 			Destroy (gameObject);
 		}

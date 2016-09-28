@@ -11,6 +11,7 @@ public class WeaponScript : MonoBehaviour {
 	public float maxRateOfFire;
 	public bool isFullAuto;
 	public bool ammoDetonates;
+	public bool isCluster = false;
 	public GameObject bullet;
 	public GameObject barrelFlash;
 	public GameObject sparks;
@@ -26,6 +27,7 @@ public class WeaponScript : MonoBehaviour {
 	private LineRenderer line;
 	private int charge;
 	private GameObject gameController;
+	int cluster_val = 0;
 
 	void Start () {
 		m_AudioSource = GetComponent<AudioSource>();
@@ -73,22 +75,22 @@ public class WeaponScript : MonoBehaviour {
 				} else if (hit.transform.name.Contains ("AlliedDrone")) {
 					text = hit.distance.ToString() + "\nAllied Drone\nDO NOT FIRE!";
 				}
-				else if (hit.transform.CompareTag ("AlliedPortal")) {
+				else if (hit.transform.name.Contains ("AlliedPortal")) {
 					text = hit.distance.ToString() + "\nAllied Portal\nDO NOT FIRE!";
 				}
 				else if (hit.transform.name.Contains ("AttackDrone")) {
 					text = hit.distance.ToString() + "\nAttack Drone\nDestroy with\nExtreme Prejudice";
 				}
-				else if (hit.transform.CompareTag ("BattleCruiser")) {
+				else if (hit.transform.name.Contains ("BattleCruiser")) {
 					text = hit.distance.ToString() + "\nBattleCruiser\nWARNING\nUnit is heavily armed!";
 				}
-				else if (hit.transform.CompareTag ("HeavyTurret")) {
+				else if (hit.transform.name.Contains ("HeavyTurret")) {
 					text = hit.distance.ToString() + "\nHeavy Turret\nWARNING\nDon't allow it to fire!";
 				}
-				else if (hit.transform.CompareTag ("PointDefense")) {
+				else if (hit.transform.name.Contains ("PointDefense")) {
 					text = hit.distance.ToString() + "\nPoint Defense\nWARNING\nRockets are ineffective\nAgainst target";
 				}
-				else if (hit.transform.CompareTag ("Portal")) {
+				else if (hit.transform.name.Contains ("Portal")) {
 					text = hit.distance.ToString() + "\nPortal\nWARNING\nDestroy before more\nDrones come through!";
 				}
 				else if (hit.transform.name.Contains ("TacticalAlliedDrone")) {
@@ -103,10 +105,10 @@ public class WeaponScript : MonoBehaviour {
 				else if (hit.transform.name.Contains ("HeavyAlliedDrone")) {
 					text = hit.distance.ToString() + "\nAllied Heavy Drone\nDO NOT FIRE!";
 				}
-				else if (hit.transform.CompareTag ("TacticalDrone")) {
+				else if (hit.transform.name.Contains ("TacticalDrone")) {
 					text = hit.distance.ToString() + "\nTactical Drone\nWARNING\nDestroy with\nExtreme Prejudice";
 				}
-				else if (hit.transform.CompareTag ("Turret")) {
+				else if (hit.transform.name.Contains ("Turret")) {
 					text = hit.distance.ToString() + "\nTurret\nWARNING\nDestroy with\nExtreme Prejudice";
 				}
 				else if (hit.transform.name.Contains ("LevelMarker")) {
@@ -139,7 +141,7 @@ public class WeaponScript : MonoBehaviour {
 				else if (hit.transform.name.Contains ("PlasmaLauncherPickup")) {
 					text = hit.distance.ToString() + "\nPlasma Launcher\nPick this up\nto fire plasma rockets\nat targets";
 				}
-				else if (hit.transform.CompareTag ("RocketTurret")) {
+				else if (hit.transform.name.Contains ("RocketTurret")) {
 					text = hit.distance.ToString() + "\nRocket Turret\nWARNING\nLaunches guided rockets\nAt targets";
 				}
 				gameController.SendMessage ("SetTargetText", text);
@@ -236,7 +238,7 @@ public class WeaponScript : MonoBehaviour {
 		else if (!isLaser && ammo > 0 && nextFireTime < Time.time)
 		{
 			GameObject blast_clone;
-			if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode") && weaponName.Equals ("Capture Gun")) {
+			if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode") && weaponName.Equals ("CaptureGun")) {
 
 			} else {
 				ammo--;
@@ -248,18 +250,45 @@ public class WeaponScript : MonoBehaviour {
 			}
 			blast_clone = Instantiate(bullet, position, transform.rotation) as GameObject;
 			blast_clone.GetComponent<Rigidbody>().velocity = transform.forward * shotSpeed;
+			if (isCluster) {
+				cluster_val = 3;
+				Invoke ("FireNextCluster", 0.2F);
+			}
 			if (ammoDetonates)
 			{
 				blast_clone.GetComponent("Projectile").SendMessage("SetDetonation", detonation_time);
 			}
-			GameObject[] pointdefenses = GameObject.FindGameObjectsWithTag ("PointDefenseLaser");
-			foreach (GameObject point in pointdefenses)
-			{
-				point.SendMessage("AddIgnoreId", blast_clone.GetInstanceID());
-			}
+
 			nextFireTime = Time.time + maxRateOfFire;
 		}
 	}
+
+	void FireNextCluster()
+	{
+		if (cluster_val == 3) {
+			Vector3 position = transform.position;
+			position.x -= 0.8F;
+			GameObject blast_clone = Instantiate (bullet, position, transform.rotation) as GameObject;
+			blast_clone.GetComponent<Rigidbody> ().velocity = transform.forward * shotSpeed;
+			cluster_val--;
+			Invoke ("FireNextCluster", 0.2F);
+		} else if (cluster_val == 2) {
+			Vector3 position = transform.position;
+			position.y -= 0.8F;
+			GameObject blast_clone = Instantiate (bullet, position, transform.rotation) as GameObject;
+			blast_clone.GetComponent<Rigidbody> ().velocity = transform.forward * shotSpeed;
+			cluster_val--;
+			Invoke ("FireNextCluster", 0.2F);
+		} else if (cluster_val == 1) {
+			Vector3 position = transform.position;
+			position.y -= 0.8F;
+			position.x -= 0.8F;
+			GameObject blast_clone = Instantiate (bullet, position, transform.rotation) as GameObject;
+			blast_clone.GetComponent<Rigidbody> ().velocity = transform.forward * shotSpeed;
+			cluster_val--;
+		}
+	}
+
 
 	bool is_holding_fire()
 	{
@@ -349,10 +378,7 @@ public class WeaponScript : MonoBehaviour {
 			if (Physics.Raycast (ray, out hit, 1000)) {
 				line.SetPosition (1, hit.point);
 				if (hit.rigidbody) {
-					if (hit.transform.name.Contains ("BreakableCube") || hit.transform.name.Contains ("AttackDrone") ||
-						hit.transform.name.Contains("TargetSphere") || hit.transform.CompareTag("Portal") ||
-						hit.transform.name.Contains("TacticalDrone") || hit.transform.name.Contains("HeavyDrone") ||
-						hit.transform.name.Contains("Carrier") || hit.transform.name.Contains("BattleCruiser")) {
+					if (hit.transform.CompareTag("EnemyUnit")) {
 						hit.transform.SendMessage ("HitByLaser");
 					} else {
 						hit.rigidbody.AddForceAtPosition (transform.forward * 100, hit.point);

@@ -40,7 +40,7 @@ public class DestroyByCollision : MonoBehaviour {
 
 	public void HitByLaser()
 	{
-		if ((gameObject.CompareTag ("Portal") || CompareTag ("AlliedPortal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
+		if (gameObject.name.Contains ("Portal") && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
 		{
 			return;
 		}
@@ -60,7 +60,7 @@ public class DestroyByCollision : MonoBehaviour {
 
 		if (other.gameObject.name.Contains("CaptureDart")) {
 			Destroy (other.gameObject);
-			if (name.Contains("AttackDrone") || CompareTag("TacticalDrone") || name.Contains("HeavyDrone")) {
+			if (CompareTag("EnemyUnit") && (name.Contains("AttackDrone") || name.Contains("TacticalDrone") || name.Contains("HeavyDrone"))) {
 				Instantiate (AlliedDroneModel, transform.position, transform.rotation);
 				objectWillExplode = false;
 				Destroy (gameObject);
@@ -116,14 +116,13 @@ public class DestroyByCollision : MonoBehaviour {
 			}
 		}
 
-		if ((gameObject.CompareTag ("Portal") || CompareTag ("AlliedPortal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
+		if (gameObject.name.Contains("Portal") && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 			remove_value = 0;
 		}
 
 		if (remove_value > 0) {
 			health -= remove_value;
 			Destroy (other.gameObject);
-			objectWillExplode = true;
 			if (health < 0) {
 				objectWillExplode = true;
 				Destroy (gameObject);
@@ -137,7 +136,7 @@ public class DestroyByCollision : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 
-		if ((gameObject.CompareTag ("Portal") || CompareTag ("AlliedPortal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
+		if ((gameObject.name.Contains("Portal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
 		{
 			return;
 		}
@@ -225,10 +224,12 @@ public class DestroyByCollision : MonoBehaviour {
 				}
 			}
 			if (destroyAllDrones) {
-				GameObject[] attackDrones = GameObject.FindGameObjectsWithTag ("AttackDrone");
+				GameObject[] attackDrones = GameObject.FindGameObjectsWithTag ("EnemyUnit");
 				foreach (GameObject drone in attackDrones) {
-					drone.GetComponent ("DestroyByCollision").SendMessage ("SetExplode");
-					Destroy (drone);
+					if (drone.name.Contains ("AttackDrone")) {
+						drone.GetComponent ("DestroyByCollision").SendMessage ("SetExplode");
+						Destroy (drone);
+					}
 				}
 			}
 		}

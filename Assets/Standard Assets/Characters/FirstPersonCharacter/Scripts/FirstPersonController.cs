@@ -7,64 +7,6 @@
 * can before you are overwhelmed and destroyed.
 * Author: Jonathan L Clark
 * Date: 3/8/2016
-* Update: 9/15/2016, Reved Sphere Crusher to version 1.3.0 and removed the Beta tag
-* as this game is now in release. Removed the fire buttons, replaced with touch sensitive
-* fire area of screen.
-* Update: 9/16/2016, Reved Sphere Crusher to version 1.3.1 Modified fire button to require
-* user to let off to fire. Modified the joystick to have a larger movement range. Added the
-* new fire area to the laser weapon, removed the 'jump' button, tapping high on the
-* screen now allows the character to jump. Removed several items that were throwing 
-* warnings. Pulled all weapon information into Dicationary structures, now using an enum
-* to access which weapon is which instead of integers. This will improve code clarity and make
-* code simplification easier.
-* Update: 9/17/2016, Reved Sphere Crusher to version 1.3.2 Fixed an issue where the
-* jump button was not working on Windows. Replaced large sections of repeat code with loops
-* reducing the code by about 200 lines. Now calling 'WeaponStrings' weapon type. Removed
-* all unused params from pickup weapon. Cleaned up the code that handles picking up
-* ammo. Removed all tags from ammo, we now detect an ammo pickup by name. Removed tags
-* from all weapon pickups, now using the names to identify each weapon. GuidedRocketLauncher
-* was changed to GuidedMissileLauncher to prevent name matching issues in the future. Modified
-* the health pack to also use the name instead of the tag. Removed the tag from the level marker.
-* Modified all bullets to be identified by name (not tag). Removed the tag from all crates, now
-* accessing with just the name.
-* Update: 9/19/2016, Reved Sphere Crusher to version 1.3.3. Removed the remaining tags from the game
-* except for tags on allied and enemy units (these must be handled seperatly). Fixed an issue where
-* guided missiles were not doing any damage to targets. Fixed an issue where jump wasn't working
-* on mobile platforms. Fixed an issue where new game objects were spawning on exit.
-* Update: 9/21/2016, Reved Sphere Crusher to version 1.3.4 Fixed an issue where explosions were
-* not affecting the player. Added the new plasma rifle and plasma explosion. Added the barrel 
-* flash special effect to the machine gun and rifle. Fixed an issue where there was no explosion
-* assigned to one of the battle cruiser's point defenses. Modified the guided rocket to only explode
-* on contact, not just when it is close. Added barrel flashes to each weapon type. Fixed an issue
-* where WeaponType.None was being accessed. Increased rocket rate of fire. Added code that allows
-* the rocket to randomly select a target.
-* Update: 9/22/2016, Modified the bullet explosion to be smaller with less particals and a
-* more accurate special effect. Modified the machine gun round and rifle round to no longer
-* be affected by gravity as these objects would appear to be like that in real life. Fixed an issue
-* where explosions were being 'eaten' by the target game object. Preformed a minor refactor on the
-* DestroyByCollision script. Now we detect implicitly weather an object is to be spawned based on
-* if that object is null or not. This eliminates the need for checkboxes in the script. Added sound
-* to the plasma cannon. Added plasma cannon ammo packs.
-* Update: 9/23/2016, Reved to version 1.3.6, Preformed a major refactor of the guided rocket
-* script. Fixed an issue where the laser was not making any sound when firing. Added the plasma launcher
-* gun pickup. Added the plasma gun pickup item to the game SurvivalMode in a hidden place. Combinde
-* the Laser Script into the Weapon script. Now only one weapon script is require for all weapons. There
-* is no longer a specal case for lasers. Fixed a few issues with the object identification system (HUD). Also
-* added the plasma launcher to the HUD.
-* Update: 9/24/2016, Reved to version 1.3.7, Increased the speed of the drones and first person controller
-* to be more responsive. Decreasesed the rifle ROF slightly but increased how powerful each shot is. Now a single
-* rifle shot can destroy a drone. Added a new unit to the game, the HeavyDrone. This unit fills the gap between the
-* battlecruiser and the tactical drone. Added code to launch the heavy drone regularly. Reduced the power of the
-* explosions. Fixed an issue where ammo counts were staying the same. Added the heavy drone to the HUD. Doubled the 
-* health pack value.
-* Update: 9/26-9/27/2016, Reved to version 1.3.8, Started adding the carrier unit. This is the heaviest unit in the game
-* capable of untold damage. Improved the rocket launch script to handle various modes. Finished the carrier AI unit.
-* Fixed an issue where the battlecruiser, heavy drone and carrier were are not affected by the laser. Added more intellegance
-* to the guided rockets so they don't get stuck circiling their target. Modified the game controller to launch the battle cruiser
-* on strictly a random basis. Added the evil guided rocket to the target list as well as the guided rocket. Now rockets can hit each other.
-* Added the carrier to the game controller. Decreased rifle pack value. Increased the capture gun pack value. Fixed an issue
-* where the enemy point defenses were not working. Added a new script that will eventually delete ammo packs after a designated
-* time frame. Disabled the 'FallAgain' script code.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
@@ -100,7 +42,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
         [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
 
-		public enum WeaponType { None=-1, Rifle=0, GrenadeLauncher=1, MachineGun=2, Laser=3, RocketLauncher=4, GuidedMissileLauncher=5, CaptureGun=6, PlasmaLauncher=7};
+		public enum WeaponType { None=-1, Rifle=0, GrenadeLauncher=1, MachineGun=2, Laser=3, RocketLauncher=4, GuidedMissileLauncher=5, CaptureGun=6, PlasmaLauncher=7, ClusterLauncher=8};
         private Camera m_Camera;
         private bool m_Jump;
         private float m_YRotation;
@@ -119,7 +61,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 	
         private AudioSource m_AudioSource;
 		private bool gameOver = false;
-		public int team = 1;
 
 		private GameObject gameController;
 		private int curWeapon = 0;
@@ -161,6 +102,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			else
 			{
 				currentWeapons [(int)WeaponType.Rifle] = 1; //Always have the rifle
+				//currentWeapons[(int)WeaponType.ClusterLauncher] = 1;
 			}
 
 			lastSaveTime = Random.Range(5.00F, 30.0F);
@@ -247,6 +189,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		{
 			//weapons.Add (WeaponType.None, null);
 			//firePoints.Add (WeaponType.None, null);
+			weapons.Add(WeaponType.ClusterLauncher, GameObject.Find("FirstPersonCharacter/ClusterLauncher"));
+			firePoints.Add(WeaponType.ClusterLauncher, GameObject.Find("FirstPersonCharacter/ClusterLauncher/LaunchPoint"));
 			weapons.Add (WeaponType.Rifle, GameObject.Find ("FirstPersonCharacter/Rifle"));
 			firePoints.Add(WeaponType.Rifle, GameObject.Find ("FirstPersonCharacter/Rifle/RifleFirePoint"));
 			weapons.Add(WeaponType.GrenadeLauncher, GameObject.Find ("FirstPersonCharacter/GrenadeLauncher"));

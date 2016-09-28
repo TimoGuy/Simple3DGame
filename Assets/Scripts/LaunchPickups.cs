@@ -11,6 +11,8 @@ public class LaunchPickups : MonoBehaviour {
 	public GameObject rockets;
 	public GameObject grenades;
 	public GameObject captureDarts;
+	public GameObject plasmaAmmo;
+	public GameObject clusterAmmo;
 	public bool health_only;
 
 	// Use this for initialization
@@ -25,27 +27,24 @@ public class LaunchPickups : MonoBehaviour {
 
 		if (health_only) {
 			launch_object = healthPack.GetComponent<Rigidbody> ();
-		}
-		else if (randomObject == 3 && laserBattery != null) {
-			launch_object = laserBattery.GetComponent<Rigidbody>();
-		}
-		else if ((randomObject == 2 || randomObject == 1) && healthPack != null) {
-			launch_object = healthPack.GetComponent<Rigidbody>();
-		}
-		else if ((randomObject == 4 || randomObject == 11 || randomObject == 12) && machineGunAmmo != null) {
-			launch_object = machineGunAmmo.GetComponent<Rigidbody>();
-		}
-		else if (randomObject == 5 && guidedRockets != null) {
-			launch_object = guidedRockets.GetComponent<Rigidbody>();
-		}
-		else if (randomObject == 6 && guidedRockets != null) {
-			launch_object = guidedRockets.GetComponent<Rigidbody>();
-		}
-		else if (randomObject == 7 && rockets != null) {
-			launch_object = rockets.GetComponent<Rigidbody>();
-		}
-		else if (randomObject == 13 && captureDarts != null) {
-			launch_object = captureDarts.GetComponent<Rigidbody>();
+		} else if (randomObject == 3 && laserBattery != null) {
+			launch_object = laserBattery.GetComponent<Rigidbody> ();
+		} else if ((randomObject == 2 || randomObject == 1) && healthPack != null) {
+			launch_object = healthPack.GetComponent<Rigidbody> ();
+		} else if ((randomObject == 4 || randomObject == 11 || randomObject == 12) && machineGunAmmo != null) {
+			launch_object = machineGunAmmo.GetComponent<Rigidbody> ();
+		} else if (randomObject == 5 && guidedRockets != null) {
+			launch_object = guidedRockets.GetComponent<Rigidbody> ();
+		} else if (randomObject == 6 && guidedRockets != null) {
+			launch_object = guidedRockets.GetComponent<Rigidbody> ();
+		} else if (randomObject == 7 && rockets != null) {
+			launch_object = rockets.GetComponent<Rigidbody> ();
+		} else if (randomObject == 13 && captureDarts != null) {
+			launch_object = captureDarts.GetComponent<Rigidbody> ();
+		} else if (randomObject == 14 && clusterAmmo != null) {
+			launch_object = clusterAmmo.GetComponent<Rigidbody> ();
+		} else if (randomObject == 15 && plasmaAmmo != null) {
+			launch_object = plasmaAmmo.GetComponent<Rigidbody> ();
 		}
 		else if ((randomObject == 8 || randomObject == 9 || randomObject == 10) && grenades != null) {
 			launch_object = grenades.GetComponent<Rigidbody>();

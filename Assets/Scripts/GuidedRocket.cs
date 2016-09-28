@@ -35,7 +35,9 @@ public class GuidedRocket : MonoBehaviour {
 		foreach (string unit_target in targetList) {
 			GameObject[] foundTargets = GameObject.FindGameObjectsWithTag (unit_target);
 			foreach (GameObject foundTarget in foundTargets) {
-				targets.Add (foundTarget);
+				if (!foundTarget.name.Contains ("Turret") && !foundTarget.name.Contains("Missile") && !foundTarget.name.Contains("Rocket")) {
+					targets.Add (foundTarget);
+				}
 			}
 		}
 		int random_target = Random.Range (0, targets.Count - 1);
@@ -53,18 +55,10 @@ public class GuidedRocket : MonoBehaviour {
 			bool direct_target_found = false;
 			List<string> targetList = new List<string> ();
 			if (isAllied) {
-				targetList.Add ("AttackDrone");
-				targetList.Add ("BattleCruiser");
-				targetList.Add ("TacticalDrone");
-				targetList.Add ("HeavyDrone");
-				targetList.Add ("Carrier");
-				targetList.Add ("RocketEvil");
+				targetList.Add ("EnemyUnit");
 			} else {
 				targetList.Add ("Player");
-				targetList.Add ("AlliedDrone");
-				targetList.Add ("AlliedTacticalDrone");
-				targetList.Add ("HeavyAlliedDrone");
-				targetList.Add ("GoodRocket");
+				targetList.Add ("AlliedUnit");
 			}
 			Ray ray = new Ray (transform.position, transform.forward);
 			RaycastHit hit;
