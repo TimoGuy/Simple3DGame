@@ -7,20 +7,50 @@
 * can before you are overwhelmed and destroyed.
 * Author: Jonathan L Clark
 * Date: 3/8/2016
+* Update: 9/29/2016, Reved to version 1.3.10. Preformed a minor
+* refactor on the FirstPersonController, modified the LoadWeapons function
+* to use a loop, now new weapons can be added seemlessly. Now using a weapon
+* class instead of a firepoint dictionary, weapon dictionary and int array (for user having a weapon).
+* Now using a bool instead of an int to indicate when the player has a weapon. Fixed an issue
+* where the cluster launcher ammo was spawning the GuidedMissileCollect object. Added hit by laser to
+* the projectile script so rockets and other objects can be hit by the laser.
+* Update: 9/30/2016, Reved to version 1.3.11, Preformed a minor refactor of the first person controller
+* added code to generate a proper pickup string message when a weapon is picked up. Combined the
+* guided rocket and Projectile scripts. fixed an issue where the grenade was not exploding when it hit
+* enemy units. Cleaned up the Projectile and DestroyByCollision scripts. Added hitByPoint defense to the 
+* DestroyByCollision script. Fixed an issue where grenades were not destroying crates. Reduced the walk
+* speed sound rate (as it was way too fast).
+* Update: 10/1/2016, Reved to version 1.3.12, Reduced the ammo levels for the plasma cannon and
+* capture gun. Performed a refactor on the drone script. Now the target and aquire target functions
+* take params instead of using globals. The target is now a GameObject rather than a transform. Added
+* the assistant drone which helps protect the player from enemies.
 ************************************************************/
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using System.Text.RegularExpressions;
 using Random = UnityEngine.Random;
 
 namespace UnityStandardAssets.Characters.FirstPerson
 {
     [RequireComponent(typeof (CharacterController))]
     [RequireComponent(typeof (AudioSource))]
-
+	public class Weapon
+	{
+		public bool has;
+		public GameObject firePoint;
+		public GameObject weapon;
+		public Weapon (GameObject weapon_in, GameObject firePoint_in, bool inHas)
+		{
+			weapon = weapon_in;
+			firePoint = firePoint_in;
+			has = inHas;
+		}
+	};
 
     public class FirstPersonController : MonoBehaviour
     {
@@ -44,6 +74,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		public enum WeaponType { None=-1, Rifle=0, GrenadeLauncher=1, MachineGun=2, Laser=3, RocketLauncher=4, GuidedMissileLauncher=5, CaptureGun=6, PlasmaLauncher=7, ClusterLauncher=8};
         private Camera m_Camera;
+		public GameObject assistant_drone;
         private bool m_Jump;
         private float m_YRotation;
         private Vector2 m_Input;
@@ -56,19 +87,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float m_NextStep;
         private bool m_Jumping;
 
-		private Dictionary<WeaponType, GameObject> weapons = new Dictionary<WeaponType, GameObject> ();
-		private Dictionary<WeaponType, GameObject> firePoints = new Dictionary<WeaponType, GameObject> ();
+		private Dictionary<WeaponType, Weapon> weapons = new Dictionary<WeaponType, Weapon> ();
 	
         private AudioSource m_AudioSource;
 		private bool gameOver = false;
 
 		private GameObject gameController;
-		private int curWeapon = 0;
+		private WeaponType current = WeaponType.Rifle;
 		private int health = 100;
 		private int lives = 1;
 		private bool lives_updated = false;
 		private float lastSaveTime;
-		private int[] currentWeapons;
 #if MOBILE_INPUT
 		private float pitch = 0x0f;
 		private float yaw = 0x0f;
@@ -86,36 +115,30 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_Jumping = false;
             m_AudioSource = GetComponent<AudioSource>();
 			m_MouseLook.Init(transform , m_Camera.transform);
-			currentWeapons = new int[25];
-			for (int i = 0; i < currentWeapons.Length; i++) {
-				currentWeapons[i] = SafeLoadPref (i.ToString () + "_" + SceneManager.GetActiveScene ().name, 0);
-			}
 			LoadWeapons ();
+
 			if (!SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 				LoadPrefs ();
 			}
-			if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode")) {
-				currentWeapons [(int) WeaponType.CaptureGun] = 1; //Always have the capture gun
-				currentWeapons [(int) WeaponType.Rifle] = 0;
-				curWeapon = 6;
+			else if (SceneManager.GetActiveScene ().name.Equals ("CaptureMode")) {
+				weapons [WeaponType.Rifle].has = false;
+				weapons [WeaponType.CaptureGun].has = true;
+				current = WeaponType.CaptureGun;
 			}
 			else
 			{
-				currentWeapons [(int)WeaponType.Rifle] = 1; //Always have the rifle
-				//currentWeapons[(int)WeaponType.ClusterLauncher] = 1;
+				weapons [WeaponType.Rifle].has = true;
 			}
 
 			lastSaveTime = Random.Range(5.00F, 30.0F);
 			Invoke ("InitialDisplay", 0.5F);
-			SwitchWeapons((WeaponType)curWeapon, true, false);
+			SwitchWeapons(current, true, false);
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
         }
 
 		/********************************************
         * SAVE PREFS
-        * DESCRIPTION: Save all prefs related to the first
-        * person controller.
         ********************************************/
 		private void SavePrefs()
 		{
@@ -124,15 +147,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			PlayerPrefs.SetFloat ("StartLocationZ" + "_" + SceneManager.GetActiveScene ().name, transform.position.z);
 			PlayerPrefs.SetInt ("health" +  "_" + SceneManager.GetActiveScene ().name, health);
 			PlayerPrefs.SetInt ("lives" +  "_" + SceneManager.GetActiveScene ().name, lives);
-			PlayerPrefs.SetInt ("curWeapon" + "_" + SceneManager.GetActiveScene ().name, curWeapon);
+			PlayerPrefs.SetInt ("curWeapon" + "_" + SceneManager.GetActiveScene ().name, (int)current);
 			PlayerPrefs.Save ();
 		}
 
 		/************************************************ 
         * SAFE LOAD INT PREF
-        * DESCRIPTION: Loads the desired preference, if that 
-        * preference is not available it sets it to the
-        * default value.
         ************************************************/
 		private int SafeLoadPref(string key, int default_value)
 		{
@@ -146,9 +166,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 		/************************************************ 
         * SAFE LOAD FLOAT PREF
-        * DESCRIPTION: Loads the desired preference, if that 
-        * preference is not available it sets it to the
-        * default value.
         ************************************************/
 		private float SafeLoadPref(string key, float default_value)
 		{
@@ -169,12 +186,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			float startX = SafeLoadPref ("StartLocationX", 0.0F);
 			float startY = SafeLoadPref ("StartLocationY", 0.0F);
 			float startZ = SafeLoadPref ("StartLocationZ", 0.0F);
-			curWeapon = SafeLoadPref ("curWeapon", 0);
+			current = (WeaponType)SafeLoadPref ("curWeapon", 0);
 			health = SafeLoadPref ("health", 100);
 			lives = SafeLoadPref ("lives", 5);
-			for (int i = 0; i < weapons.Count; i++) {
-				currentWeapons [i] = SafeLoadPref ("Weapon_" + i.ToString(), 0);
-			}
 			if (startX == 0.0F && startY == 0.0F && startZ == 0.0F) {
 			} else {
 				transform.position = new Vector3(startX, startY, startZ + 5.0F);
@@ -187,28 +201,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
         ********************************************/
 		private void LoadWeapons()
 		{
-			//weapons.Add (WeaponType.None, null);
-			//firePoints.Add (WeaponType.None, null);
-			weapons.Add(WeaponType.ClusterLauncher, GameObject.Find("FirstPersonCharacter/ClusterLauncher"));
-			firePoints.Add(WeaponType.ClusterLauncher, GameObject.Find("FirstPersonCharacter/ClusterLauncher/LaunchPoint"));
-			weapons.Add (WeaponType.Rifle, GameObject.Find ("FirstPersonCharacter/Rifle"));
-			firePoints.Add(WeaponType.Rifle, GameObject.Find ("FirstPersonCharacter/Rifle/RifleFirePoint"));
-			weapons.Add(WeaponType.GrenadeLauncher, GameObject.Find ("FirstPersonCharacter/GrenadeLauncher"));
-			firePoints.Add(WeaponType.GrenadeLauncher, GameObject.Find ("FirstPersonCharacter/GrenadeLauncher/GrenadeFirePoint"));
-			weapons.Add(WeaponType.Laser, GameObject.Find ("FirstPersonCharacter/LaserGun"));
-			firePoints.Add(WeaponType.Laser, GameObject.Find ("FirstPersonCharacter/LaserGun/LaserFirePoint"));
-			weapons.Add(WeaponType.RocketLauncher, GameObject.Find ("FirstPersonCharacter/RocketLauncher"));
-			firePoints.Add(WeaponType.RocketLauncher, GameObject.Find ("FirstPersonCharacter/RocketLauncher/LaunchPoint"));
-			weapons.Add(WeaponType.GuidedMissileLauncher, GameObject.Find ("FirstPersonCharacter/GuidedRocketLauncher"));
-			firePoints.Add(WeaponType.GuidedMissileLauncher, GameObject.Find ("FirstPersonCharacter/GuidedRocketLauncher/LaunchPoint"));
-			weapons.Add(WeaponType.CaptureGun, GameObject.Find ("FirstPersonCharacter/DroneCaptureRifle"));
-			firePoints.Add(WeaponType.CaptureGun, GameObject.Find ("FirstPersonCharacter/DroneCaptureRifle/LaunchPoint"));
-			weapons.Add(WeaponType.MachineGun, GameObject.Find ("FirstPersonCharacter/MachineGun"));
-			firePoints.Add(WeaponType.MachineGun, GameObject.Find ("FirstPersonCharacter/MachineGun/MachineGunFirePoint"));
-			weapons.Add(WeaponType.PlasmaLauncher, GameObject.Find("FirstPersonCharacter/PlasmaLauncher"));
-			firePoints.Add(WeaponType.PlasmaLauncher, GameObject.Find("FirstPersonCharacter/PlasmaLauncher/PlasmaFirePoint"));
+			string local = "FirstPersonCharacter";
+			var values = Enum.GetValues (typeof(WeaponType));
+			foreach (var value in values) {
+				WeaponType type = (WeaponType)value;
+				if (type != WeaponType.None) {
+					bool hasWeapon = Convert.ToBoolean(SafeLoadPref (((int)type).ToString() + "_" + SceneManager.GetActiveScene ().name, 0));
+					Weapon targetWeapon = new Weapon (GameObject.Find (local + "/" + type.ToString ()), GameObject.Find(local + "/" + type.ToString () + "/FirePoint"), hasWeapon);
+					weapons.Add (type, targetWeapon);
+				}
+			}
 			gameController = GameObject.FindGameObjectWithTag ("GameController");
-
 		}
 
 		/********************************************
@@ -238,9 +241,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		private void ClearWeaponSaves()
 		{
 			foreach (WeaponType weapon in weapons.Keys) {
-				weapons [weapon].SetActive (true);
-				firePoints[weapon].SendMessage ("DeleteAmmoLevel");
-				weapons [weapon].SetActive (false);
+				weapons [weapon].weapon.SetActive (true);
+				weapons[weapon].firePoint.SendMessage ("DeleteAmmoLevel");
+				weapons [weapon].weapon.SetActive (false);
 			}
 		}
 
@@ -257,9 +260,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			PlayerPrefs.DeleteKey ("curWeapon" + "_" + SceneManager.GetActiveScene ().name);
 			foreach (WeaponType weapon in weapons.Keys) {
 				PlayerPrefs.DeleteKey ("Weapon_" + ((int)weapon).ToString() + "_" + SceneManager.GetActiveScene ().name);
-				weapons [weapon].SetActive (true);
-				firePoints[weapon].SendMessage ("ResetAmmo");
-				weapons [weapon].SetActive (false);
+				weapons [weapon].weapon.SetActive (true);
+				weapons[weapon].firePoint.SendMessage ("ResetAmmo");
+				weapons [weapon].weapon.SetActive (false);
 			}
 		}
 
@@ -276,7 +279,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					lives--;
 					if (SceneManager.GetActiveScene ().name.Equals ("SurvivalMode")) {
 						gameController.SendMessage ("GameOver");
-						//SwitchWeapons (WeaponType.None, false, false); //deactivate weapons
 						gameOver = true;
 						Invoke ("LoadMainMenu", 5.0F);
 
@@ -294,7 +296,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					{
 						gameController.SendMessage ("SetDefaults");
 						gameController.SendMessage ("GameOver");
-						//SwitchWeapons (WeaponType.None, false, false); //deactivate weapons
 						Invoke ("LoadMainMenu", 5.0F);
 						gameOver = true;
 						ClearWeaponSaves ();
@@ -325,17 +326,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		private void NextWeapon()
 		{
 			bool foundNewWeapon = false;
-			curWeapon++; //Move to the first new weapon
-			for (int i = curWeapon; i < currentWeapons.Length; i++) {
-				if (currentWeapons [i] == 1) {
-					curWeapon = i;
+			current++; //Move to the first new weapon
+			for (int i = (int)current; i < weapons.Keys.Count; i++) {
+				WeaponType type = (WeaponType)i;
+				if (weapons[type].has) {
+					current = type;
 					foundNewWeapon = true;
 					break;
 				}
 			}
 			//We have no other weapons, switch back to the rifle.
 			if (foundNewWeapon == false) {
-				curWeapon = 0;
+				current = WeaponType.Rifle;
 			}
 		}
 
@@ -345,17 +347,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
         ********************************************/
 		public void SwitchWeapons(WeaponType newWeapon, bool save, bool playReload)
 		{
-			//Deactive all weapons
-			foreach (WeaponType weapon in weapons.Keys) {
-				weapons [weapon].SetActive (false);
+			foreach (WeaponType weaponType in weapons.Keys) {
+				weapons [weaponType].weapon.SetActive (false);
 			}
 
-			curWeapon = (int)newWeapon;
+			current = newWeapon;
 
-			weapons [newWeapon].SetActive (true);
-			firePoints[newWeapon].SendMessage ("WeaponActive");
+			weapons [newWeapon].weapon.SetActive (true);
+			weapons[newWeapon].firePoint.SendMessage ("WeaponActive");
 			if (playReload) {
-				firePoints[newWeapon].SendMessage ("PlayPickupSound");
+				weapons[newWeapon].firePoint.SendMessage ("PlayPickupSound");
 			}
 		}
 
@@ -396,7 +397,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
 			if ((Input.GetKeyDown ("b") || CrossPlatformInputManager.GetButtonDown("Fire2")) && gameOver == false) {
 				NextWeapon ();
-				SwitchWeapons((WeaponType)curWeapon, true, false);
+				SwitchWeapons(current, true, false);
 			}
 			if (gameOver == false) {
 				RotateView ();
@@ -479,7 +480,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_AudioSource.Play();
         }
 
-
+		private bool lastStep = false;
         private void ProgressStepCycle(float speed)
         {
             if (m_CharacterController.velocity.sqrMagnitude > 0 && (m_Input.x != 0 || m_Input.y != 0))
@@ -495,7 +496,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             m_NextStep = m_StepCycle + m_StepInterval;
 
-            PlayFootStepAudio();
+			if (!lastStep) {
+				PlayFootStepAudio ();
+				lastStep = true;
+			} else {
+				lastStep = false;
+			}
         }
 
 
@@ -614,20 +620,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
         *************************************************/
 		void PickupWeapon(GameObject weapon, WeaponType weaponType, string weaponMessage, string ammoMessage)
 		{
-			if (currentWeapons[(int)weaponType] == 0) {
-				currentWeapons[(int)weaponType] = 1;
+			if (!weapons[weaponType].has) {
+				weapons[weaponType].has = true;
 				Destroy (weapon);
 				gameController.SendMessage("SetTempText", weaponMessage); 
-				//SwitchWeapons ((WeaponType)curWeapon, true, true);
 			} else {
-				bool isActive = weapons [weaponType];
-				weapons [weaponType].SetActive (true);
-				firePoints[weaponType].SendMessage ("CollectAmmo", weapon);
-				weapons [weaponType].SetActive (isActive);
-				//SwitchWeapons ((WeaponType)curWeapon, true, true);
+				bool isActive = weapons [weaponType].weapon.activeSelf;
+				weapons [weaponType].weapon.SetActive (true);
+				weapons[weaponType].firePoint.SendMessage ("CollectAmmo", weapon);
+				weapons [weaponType].weapon.SetActive (isActive);
 				gameController.SendMessage("ammoMessage", weaponMessage); 
 			}
-			SwitchWeapons ((WeaponType)curWeapon, true, true);
+			SwitchWeapons (current, true, true);
 		}
 
 		/***********************************************
@@ -635,23 +639,27 @@ namespace UnityStandardAssets.Characters.FirstPerson
         ***********************************************/
 		void PickupAmmo(GameObject inputPack, WeaponType weaponType, string message)
 		{
-			bool isActive = weapons [weaponType].activeSelf;
-			weapons [weaponType].SetActive (true);
-			firePoints[weaponType].SendMessage ("CollectAmmo", inputPack);
-			weapons [weaponType].SetActive (isActive);
-			SwitchWeapons ((WeaponType)curWeapon, true, true);
+			bool isActive = weapons [weaponType].weapon.activeSelf;
+			weapons [weaponType].weapon.SetActive (true);
+			weapons[weaponType].firePoint.SendMessage ("CollectAmmo", inputPack);
+			weapons [weaponType].weapon.SetActive (isActive);
+			SwitchWeapons (current, true, true);
 			gameController.SendMessage("SetTempText", message); 
 
 		}
 
+		/************************************************
+        * ON TRIGGER ENTER
+        ************************************************/
 		void OnTriggerEnter(Collider other) {
 			//Is it a weapon or ammo?
 			foreach (WeaponType weaponType in weapons.Keys) {
+				string weaponName = Regex.Replace (weaponType.ToString (), "(\\B[A-Z])", " $1");
 				if (other.gameObject.name.Contains (weaponType.ToString () + "AmmoCollect")) {
-					PickupAmmo (other.gameObject, weaponType, "Picked up " + weaponType.ToString ().ToLower () + " ammo");
+					PickupAmmo (other.gameObject, weaponType, "Picked up " + weaponName + " ammo");
 					break;
-				} else if (other.gameObject.name.Contains (weaponType.ToString () + "PickupCollect") && !other.gameObject.name.Contains("Laser")) {
-					PickupWeapon(other.gameObject, weaponType, "Picked up " + weaponType.ToString(), "Picked up " + weaponType.ToString ().ToLower () + " ammo");
+				} else if (other.gameObject.name.Contains (weaponType.ToString () + "PickupCollect")) {
+					PickupWeapon(other.gameObject, weaponType, "Picked up " + weaponName, "Picked up " + weaponName + " ammo");
 					break;
 				}
 			}
@@ -663,21 +671,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			}
 			if (other.gameObject.name.Contains ("ExplosionMassive")) {
 				ReduceHealth(10);
-			}
-			if (other.gameObject.name.Contains ("LaserPickup")) {
-				if (currentWeapons[(int)WeaponType.Laser] == 0) {
-					currentWeapons[(int)WeaponType.Laser] = 1;
-					Destroy (other.gameObject);
-					gameController.SendMessage("SetTempText", "Picked up laser gun"); 
-					PlayerPrefs.SetInt ("hasLaser" + "_" + SceneManager.GetActiveScene ().name, currentWeapons[3]);
-				} else {
-					bool isActive = weapons [WeaponType.Laser].activeSelf;
-					weapons [WeaponType.Laser].SetActive (true);
-					firePoints[WeaponType.Laser].SendMessage ("CollectAmmo", other.gameObject);
-					weapons [WeaponType.Laser].SetActive (isActive);
-					SwitchWeapons ((WeaponType)curWeapon, true, true);
-					gameController.SendMessage("SetTempText", "Picked up laser gun"); 
-				}
 			}
 			if (other.gameObject.name.Contains ("HealthPack")) {
 				if (health < 100)
@@ -692,19 +685,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					gameController.SendMessage("SetTempText", "Picked up health"); 
 				}
 			}
+			if (other.gameObject.name.Contains ("DroneSpawnBox")) {
+				Destroy (other.gameObject);
+				Instantiate (assistant_drone, transform.position, transform.rotation);
+				gameController.SendMessage("SetTempText", "Assistant drone will now help you"); 
+			}
 			if (other.gameObject.name.Contains ("LevelMarker") && lastSaveTime < Time.time) {
 				foreach (WeaponType weapon in weapons.Keys) {
-					weapons [weapon].SetActive (true);
-					firePoints[weapon].SendMessage ("SaveAmmo");
-					weapons [weapon].SetActive (false);
+					weapons [weapon].weapon.SetActive (true);
+					weapons[weapon].firePoint.SendMessage ("SaveAmmo");
+					weapons [weapon].weapon.SetActive (false);
 				}
-
-				//Save weapons
-				for (int i = 0; i < currentWeapons.Length; i++) {
-					PlayerPrefs.SetInt ("Weapon_" + i.ToString() + "_" + SceneManager.GetActiveScene ().name, currentWeapons[i]);
+				foreach (WeaponType weaponType in weapons.Keys) {
+					PlayerPrefs.SetInt (((int)weaponType).ToString() + "_" + SceneManager.GetActiveScene ().name, Convert.ToInt32(weapons[weaponType].has));
 				}
 				SavePrefs ();
-				SwitchWeapons ((WeaponType)curWeapon, false, false);
+				SwitchWeapons (current, false, false);
 				gameController.SendMessage ("SaveGame");
 				gameController.SendMessage("SetTempText", "Game Saved");
 				IncreaseHalth (20);

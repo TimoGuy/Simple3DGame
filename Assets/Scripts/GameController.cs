@@ -45,7 +45,7 @@ public class GameController : MonoBehaviour {
 	private float default_drone_launch_time = 30;
 	private int tactical_drone_launch_bound = 10;
 	private bool damaged = false;
-	private static string version = "1.3.8";
+	private static string version = "1.3.11";
 
 	// Use this for initialization
 	void Start () {

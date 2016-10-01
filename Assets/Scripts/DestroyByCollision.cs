@@ -38,6 +38,9 @@ public class DestroyByCollision : MonoBehaviour {
 		controller = GameObject.FindObjectOfType<UnityStandardAssets.Characters.FirstPerson.FirstPersonController> ();	
 	}
 
+	/********************************************************
+    * HIT BY LASER
+    ********************************************************/
 	public void HitByLaser()
 	{
 		if (gameObject.name.Contains ("Portal") && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
@@ -53,6 +56,22 @@ public class DestroyByCollision : MonoBehaviour {
 		}
 	}
 
+	/************************************************************
+    * HIT BY POINT DEFENSE
+    * DESCRIPTION: Called if the projectile is hit by a point defense laser
+    *************************************************************/
+	public void HitByPointDefense()
+	{
+		health--;
+		if (health <= 0) {
+			objectWillExplode = true;
+			Destroy (gameObject);
+		}
+	}
+
+	/********************************************************
+    * ON COLLISION ENTER
+    ********************************************************/
 	void OnCollisionEnter(Collision other)
 	{
 		int remove_value = 0;
@@ -122,7 +141,7 @@ public class DestroyByCollision : MonoBehaviour {
 
 		if (remove_value > 0) {
 			health -= remove_value;
-			Destroy (other.gameObject);
+			//Destroy (other.gameObject);
 			if (health < 0) {
 				objectWillExplode = true;
 				Destroy (gameObject);
@@ -134,6 +153,9 @@ public class DestroyByCollision : MonoBehaviour {
 		}
 	}
 
+	/********************************************************
+    * ON TRIGGER ENTER
+    ********************************************************/
 	void OnTriggerEnter(Collider other) {
 
 		if ((gameObject.name.Contains("Portal")) && SceneManager.GetActiveScene ().name.Equals ("SurvivalMode"))
@@ -156,16 +178,25 @@ public class DestroyByCollision : MonoBehaviour {
 		}
 	}
 
+	/********************************************************
+    * SET EXPLODE
+    ********************************************************/
 	public void SetExplode()
 	{
 		objectWillExplode = true;
 	}
 
+	/********************************************************
+    * ON APPLICATION QUIT
+    ********************************************************/
 	void OnApplicationQuit()
 	{
 		objectWillExplode = false;
 	}
 
+	/********************************************************
+    * ON DESTROY
+    ********************************************************/
 	void OnDestroy() {
 		if (objectWillExplode) {
 			Rigidbody rb = GetComponent<Rigidbody> ();

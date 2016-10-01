@@ -55,7 +55,6 @@
      <Compile Include="Assets\Scripts\Drone.cs" />
      <Compile Include="Assets\Scripts\FallAgain.cs" />
      <Compile Include="Assets\Scripts\GameController.cs" />
-     <Compile Include="Assets\Scripts\GuidedRocket.cs" />
      <Compile Include="Assets\Scripts\LaunchPickups.cs" />
      <Compile Include="Assets\Scripts\LaunchTargets.cs" />
      <Compile Include="Assets\Scripts\MenuScript.cs" />

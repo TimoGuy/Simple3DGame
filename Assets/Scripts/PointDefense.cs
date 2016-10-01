@@ -6,22 +6,29 @@ public class PointDefense : MonoBehaviour {
 
 	private GameObject target = null;
 	LineRenderer line;
+	public bool isAllied = false;
 
 	// Use this for initialization
 	void Start () {
 		line = gameObject.GetComponent<LineRenderer> ();
 		line.useWorldSpace = true;
+		line.enabled = false;
 	}
 		
 	// Update is called once per frame
 	void Update () {
+		string targetUnits = "AlliedUnit";
+		if (isAllied) {
+			targetUnits = "EnemyUnit";
+		}
 		if (line.enabled == false) {
-			GameObject[] rockets = GameObject.FindGameObjectsWithTag ("AlliedUnit");
+			GameObject[] rockets = GameObject.FindGameObjectsWithTag (targetUnits);
 			foreach (GameObject rocket in rockets) {
 				//Rocket must not be on the same team as the point defense to be a valid target
 				if ((rocket.name.Contains("Rocket") || rocket.name.Contains("Missile")) && Vector3.Distance (rocket.transform.position, transform.position) < 40) {
 					transform.LookAt (rocket.transform.position);
 					target = rocket;
+
 					StartCoroutine ("FirePointBeam");
 					break;
 				}

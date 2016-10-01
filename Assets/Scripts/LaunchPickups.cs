@@ -13,6 +13,7 @@ public class LaunchPickups : MonoBehaviour {
 	public GameObject captureDarts;
 	public GameObject plasmaAmmo;
 	public GameObject clusterAmmo;
+	public GameObject assistantDroneBox;
 	public bool health_only;
 
 	// Use this for initialization
@@ -45,6 +46,8 @@ public class LaunchPickups : MonoBehaviour {
 			launch_object = clusterAmmo.GetComponent<Rigidbody> ();
 		} else if (randomObject == 15 && plasmaAmmo != null) {
 			launch_object = plasmaAmmo.GetComponent<Rigidbody> ();
+		} else if (randomObject == 16 && assistantDroneBox != null) {
+			launch_object = assistantDroneBox.GetComponent<Rigidbody> ();
 		}
 		else if ((randomObject == 8 || randomObject == 9 || randomObject == 10) && grenades != null) {
 			launch_object = grenades.GetComponent<Rigidbody>();
