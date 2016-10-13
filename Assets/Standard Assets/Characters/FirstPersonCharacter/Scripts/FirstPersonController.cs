@@ -98,10 +98,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		private int lives = 1;
 		private bool lives_updated = false;
 		private float lastSaveTime;
-//#if MOBILE_INPUT
+#if MOBILE_INPUT
 		private float pitch = 0x0f;
 		private float yaw = 0x0f;
-//#endif
+#endif
         // Use this for initialization
         private void Start()
         {
@@ -587,7 +587,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                m_MouseLook.LookRotation (transform, m_Camera.transform);
 			}
 
-//#else
+#else
 			   int xSectionSize = Screen.width / 4;
 			   int ySectionSize = Screen.height / 4;
 
