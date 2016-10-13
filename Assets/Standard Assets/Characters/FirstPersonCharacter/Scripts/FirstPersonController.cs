@@ -98,10 +98,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
 		private int lives = 1;
 		private bool lives_updated = false;
 		private float lastSaveTime;
-#if MOBILE_INPUT
+//#if MOBILE_INPUT
 		private float pitch = 0x0f;
 		private float yaw = 0x0f;
-#endif
+//#endif
         // Use this for initialization
         private void Start()
         {
@@ -587,7 +587,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                m_MouseLook.LookRotation (transform, m_Camera.transform);
 			}
 
-#else
+//#else
 			   int xSectionSize = Screen.width / 4;
 			   int ySectionSize = Screen.height / 4;
 
@@ -605,10 +605,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			         if ((m_Camera.transform.eulerAngles.x < 400 && m_Camera.transform.eulerAngles.x + pitch > 280) ||
 				         (m_Camera.transform.eulerAngles.x > -1 && m_Camera.transform.eulerAngles.x + pitch < 60))
 			             {
-			                 m_Camera.transform.localEulerAngles += new Vector3(pitch, m_Camera.transform.localEulerAngles.y,
-				             m_Camera.transform.localEulerAngles.z);
+			                 m_Camera.transform.localRotation *= Quaternion.Euler(pitch, 0, 0);
 			             }
-			             transform.localEulerAngles += new Vector3(0, yaw, 0);
+			             transform.localRotation *= Quaternion.Euler(0, yaw, 0);
 				         break; //Don't need to continue in this loop
 			       }
 			    }
